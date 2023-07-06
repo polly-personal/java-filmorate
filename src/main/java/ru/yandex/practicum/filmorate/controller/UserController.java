@@ -27,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody User newUser) throws ValidationException, ValidationExceptionForResponse{
+    public User createUser(@RequestBody User newUser) throws ValidationException, ValidationExceptionForResponse {
         try {
             log.debug(getTextForLog(LogType.DEBUG_CURRENT_NUMBER_OF_USERS) + usersManager.getUsers().size());
             User createdUser = usersManager.createUser(newUser);
@@ -45,7 +45,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User updatedUser) throws ValidationException, ValidationExceptionForResponse{
+    public User updateUser(@RequestBody User updatedUser) throws ValidationException, ValidationExceptionForResponse {
         try {
             log.debug(getTextForLog(LogType.DEBUG_CURRENT_NUMBER_OF_USERS) + usersManager.getUsers().size());
             User currentUser = usersManager.updateUser(updatedUser);
