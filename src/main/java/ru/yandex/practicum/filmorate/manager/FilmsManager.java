@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.manager;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +45,7 @@ public class FilmsManager {
         return film;
     }
 
-    public Film updateFilm(Film updatedFilm) throws ValidationException{
+    public Film updateFilm(Film updatedFilm) throws ValidationException {
         int ID = updatedFilm.getId();
         if (!films.containsKey(ID)) {
             throw new ValidationException("пользователь с ID: " + ID + " не существует!");
@@ -72,7 +73,7 @@ public class FilmsManager {
         return currentFilm;
     }
 
-    public void nameValidation(String name) throws ValidationException{
+    public void nameValidation(String name) throws ValidationException {
         if (name != null) {
             if (name.equals("null") || name.isBlank()) {
                 throw new ValidationException("поле \"name\" должно быть заполнено!");
