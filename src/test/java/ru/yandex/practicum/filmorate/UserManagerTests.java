@@ -91,7 +91,7 @@ class UserManagerTests {
 
     @DisplayName("создать пользователя, если name=null")
     @Test
-    void сreateUserWithNullName() {
+    void createUserWithIncorrectName() {
         LocalDate birthday = LocalDate.of(2021, 6, 7);
         User user = User.builder()
                 .id(0)
