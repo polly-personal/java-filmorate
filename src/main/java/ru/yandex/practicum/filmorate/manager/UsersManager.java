@@ -14,8 +14,7 @@ import java.util.List;
 public class UsersManager {
     int currentID;
 
-
-    private final HashMap<Integer, User> users = new HashMap();
+    private HashMap<Integer, User> users = new HashMap();
 
     public int createID() {
         ++currentID;

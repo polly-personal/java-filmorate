@@ -13,7 +13,7 @@ import java.util.List;
 public class FilmsManager {
     int currentID;
 
-    private final HashMap<Integer, Film> films = new HashMap();
+    private HashMap<Integer, Film> films = new HashMap();
 
     public int createID() {
         ++currentID;
