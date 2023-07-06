@@ -46,9 +46,9 @@ public class FilmsManager {
     }
 
     public Film updateFilm(Film updatedFilm) throws ValidationException {
-        int ID = updatedFilm.getId();
-        if (!films.containsKey(ID)) {
-            throw new ValidationException("пользователь с ID: " + ID + " не существует!");
+        int id = updatedFilm.getId();
+        if (!films.containsKey(id)) {
+            throw new ValidationException("пользователь с id: " + id + " не существует!");
         }
 
         Film currentFilm = films.get(updatedFilm.getId());
@@ -69,7 +69,7 @@ public class FilmsManager {
         durationValidation(updatedDuration);
         currentFilm.setDuration(updatedDuration);
 
-        films.put(ID, currentFilm);
+        films.put(id, currentFilm);
         return currentFilm;
     }
 

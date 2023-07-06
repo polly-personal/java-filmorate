@@ -50,9 +50,9 @@ public class UsersManager {
     }
 
     public User updateUser(User updatedUser) throws ValidationException {
-        int ID = updatedUser.getId();
-        if (!users.containsKey(ID)) {
-            throw new ValidationException("пользователь с ID: " + ID + " не существует!");
+        int id = updatedUser.getId();
+        if (!users.containsKey(id)) {
+            throw new ValidationException("пользователь с id: " + id + " не существует!");
         }
 
         User currentUser = users.get(updatedUser.getId());
@@ -76,7 +76,7 @@ public class UsersManager {
             currentUser.setName(updatedName);
         }
 
-        users.put(ID, currentUser);
+        users.put(id, currentUser);
         return currentUser;
     }
 
