@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.function.Executable;
-import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.manager.UsersManager;
 import ru.yandex.practicum.filmorate.model.User;
@@ -15,27 +13,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("UserManagerTests должен ")
-//@SpringBootTest
 class UserManagerTests {
     UsersManager usersManager;
     HashMap<Integer, User> users;
-//	int currentID;
 
     @BeforeEach
     public void createUserManager() {
         usersManager = Managers.getDefaultUsersManager();
         users = usersManager.getUsers();
-//		usersManager.getCurrentID();
-//		currentID = usersManager.getCurrentID();
     }
 
     @AfterEach
     public void clearUserManager() {
         users.clear();
-//        System.out.println("usersManager.getUsers(): " + usersManager.getUsers());
-//		currentID = 0;
         usersManager.setCurrentID(0);
-//        System.out.println("usersManager.getCurrentID(): " + usersManager.getCurrentID());
     }
 
     @DisplayName("создать пользователя")
@@ -97,6 +88,7 @@ class UserManagerTests {
         assertEquals("🔹некорректный login", exception.getMessage());
         assertEquals(0, users.size(), "размер мапы != 0");
     }
+
     @DisplayName("создать пользователя, если name=null")
     @Test
     void сreateUserWithNullName() {
@@ -134,5 +126,4 @@ class UserManagerTests {
         assertEquals("🔹birthday не может быть в будущем", exception.getMessage());
         assertEquals(0, users.size(), "размер мапы != 0");
     }
-
 }

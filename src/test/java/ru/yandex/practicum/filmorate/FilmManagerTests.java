@@ -4,7 +4,6 @@ import org.junit.jupiter.api.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.manager.FilmsManager;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.util.Managers;
 
 import java.time.LocalDate;
@@ -14,28 +13,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("FilmManagerTests должен ")
-//@SpringBootTest
 public class FilmManagerTests {
     FilmsManager filmsManager;
     HashMap<Integer, Film> films;
-//	int currentID;
 
     @BeforeEach
     public void createUserManager() {
         filmsManager = Managers.getDefaultFilmsManager();
         films = filmsManager.getFilms();
-//		usersManager.getCurrentID();
-//		currentID = usersManager.getCurrentID();
     }
 
     @AfterEach
     public void clearFilmManager() {
         films.clear();
-//        System.out.println("usersManager.getUsers(): " + usersManager.getUsers());
-//		currentID = 0;
         filmsManager.setCurrentID(0);
-//        System.out.println("usersManager.getCurrentID(): " + usersManager.getCurrentID());
     }
+
     @DisplayName("создать фильм")
     @Test
     void createFilm() {
@@ -60,7 +53,6 @@ public class FilmManagerTests {
         LocalDate releaseDate = LocalDate.of(2021, 6, 7);
         Film film = Film.builder()
                 .id(0)
-//                .name("filmName")
                 .description("some")
                 .releaseDate(releaseDate)
                 .duration(120)
@@ -68,7 +60,7 @@ public class FilmManagerTests {
 
         ValidationException exception = assertThrows(
                 ValidationException.class,
-                        () -> filmsManager.createFilm(film)
+                () -> filmsManager.createFilm(film)
         );
 
         assertEquals("🔹поле \"name\" должно быть заполнено!", exception.getMessage());
@@ -89,12 +81,13 @@ public class FilmManagerTests {
 
         ValidationException exception = assertThrows(
                 ValidationException.class,
-                        () -> filmsManager.createFilm(film)
+                () -> filmsManager.createFilm(film)
         );
 
         assertEquals("🔹длина description больше 200 символов!", exception.getMessage());
         assertEquals(0, films.size(), "размер мапы != 0");
     }
+
     @DisplayName("НЕ создавать фильм, если releaseDate раньше, чем 1885/12/28")
     @Test
     void doNotCreateFilmWithIncorrectReleaseDate() {
@@ -109,7 +102,7 @@ public class FilmManagerTests {
 
         ValidationException exception = assertThrows(
                 ValidationException.class,
-                        () -> filmsManager.createFilm(film)
+                () -> filmsManager.createFilm(film)
         );
 
         assertEquals("🔹\"releaseDate\" не может быть раньше, чем 1895/12/28", exception.getMessage());
@@ -130,11 +123,10 @@ public class FilmManagerTests {
 
         ValidationException exception = assertThrows(
                 ValidationException.class,
-                        () -> filmsManager.createFilm(film)
+                () -> filmsManager.createFilm(film)
         );
 
         assertEquals("🔹поле \"duration\" не может быть отрицательным!", exception.getMessage());
         assertEquals(0, films.size(), "размер мапы != 0");
     }
-
 }
