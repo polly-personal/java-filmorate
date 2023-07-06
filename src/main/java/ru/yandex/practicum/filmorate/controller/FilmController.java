@@ -45,7 +45,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film updatedFilm) throws ValidationException, ValidationExceptionForResponse{
+    public Film updateFilm(@RequestBody Film updatedFilm) throws ValidationException, ValidationExceptionForResponse {
         try {
             log.debug(getTextForLog(LogType.DEBUG_CURRENT_NUMBER_OF_USERS) + filmsManager.getFilms().size());
             Film currentFilm = filmsManager.updateFilm(updatedFilm);
