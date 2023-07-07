@@ -47,7 +47,7 @@ class UserManagerTests {
         assertEquals(1, users.size(), "размер мапы != 1");
     }
 
-    @DisplayName("НЕ создавать пользователя, если некорректная email")
+    @DisplayName("НЕ создавать пользователя, если некорректный email")
     @Test
     void doNotCreateUserWithIncorrectEmail() {
         LocalDate birthday = LocalDate.of(2021, 6, 7);
@@ -64,7 +64,7 @@ class UserManagerTests {
                 () -> usersManager.createUser(user)
         );
 
-        assertEquals("🔹некорректная email", exception.getMessage());
+        assertEquals("🔹некорректный email! ваш email: someyandex.ru", exception.getMessage());
         assertEquals(0, users.size(), "размер мапы != 0");
     }
 

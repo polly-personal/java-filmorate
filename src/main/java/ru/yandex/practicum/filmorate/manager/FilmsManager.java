@@ -51,26 +51,25 @@ public class FilmsManager {
             throw new ValidationException("пользователь с id: " + id + " не существует!");
         }
 
-        Film currentFilm = films.get(updatedFilm.getId());
-
         String updatedName = updatedFilm.getName();
         nameValidation(updatedName);
-        currentFilm.setName(updatedName);
 
         String updatedDescription = updatedFilm.getDescription();
         descriptionValidation(updatedDescription);
-        currentFilm.setDescription(updatedDescription);
 
         LocalDate updatedReleaseDate = updatedFilm.getReleaseDate();
         releaseDateValidation(updatedReleaseDate);
-        currentFilm.setReleaseDate(updatedReleaseDate);
 
         int updatedDuration = updatedFilm.getDuration();
         durationValidation(updatedDuration);
-        currentFilm.setDuration(updatedDuration);
 
-        films.put(id, currentFilm);
-        return currentFilm;
+        Film filmByID = films.get(updatedFilm.getId());
+        filmByID.setName(updatedName);
+        filmByID.setDescription(updatedDescription);
+        filmByID.setReleaseDate(updatedReleaseDate);
+        filmByID.setDuration(updatedDuration);
+
+        return filmByID;
     }
 
     public void nameValidation(String name) throws ValidationException {
@@ -80,7 +79,7 @@ public class FilmsManager {
             }
             for (Film film : films.values()) {
                 if (film.getName().equals(name)) {
-                    throw new ValidationException("фильм с таким именем уже существует!");
+                    throw new ValidationException("фильм с таким name уже существует!");
                 }
             }
         } else {
@@ -91,7 +90,7 @@ public class FilmsManager {
     public void descriptionValidation(String description) {
         if (description != null) {
             if (description.isBlank()) {
-                throw new ValidationException("некорректное description");
+                throw new ValidationException("некорректный description");
             }
             if (description.length() > 200) {
                 throw new ValidationException("длина description больше 200 символов!");
@@ -116,10 +115,7 @@ public class FilmsManager {
     }
 
     public List<Film> getFilmsList() {
-        List<Film> list = new ArrayList<>();
-        for (Film film : films.values()) {
-            list.add(film);
-        }
+        List<Film> list = new ArrayList<>(films.values());
         return list;
     }
 }
