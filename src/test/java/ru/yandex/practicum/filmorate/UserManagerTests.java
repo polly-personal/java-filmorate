@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.util.Managers;
 
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DisplayName("UserManagerTests должен ")
 class UserManagerTests {
     UsersManager usersManager;
-    HashMap<Integer, User> users;
+    Map<Integer, User> users;
 
     @BeforeEach
     public void createUserManager() {

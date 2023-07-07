@@ -8,44 +8,25 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class UsersManager {
     int currentID;
 
-    private HashMap<Integer, User> users = new HashMap();
-
-    public int createID() {
-        ++currentID;
-        return currentID;
-    }
+    private Map<Integer, User> users = new HashMap();
 
     public User createUser(User newUser) throws ValidationException {
-        String userEmail = newUser.getEmail();
-        emailValidation(userEmail);
+        emailValidation(newUser.getEmail());
+        birthdayValidation(newUser.getBirthday());
 
         String userLogin = newUser.getLogin();
         loginValidation(userLogin);
+        chooseLoginOrName(newUser, newUser.getName(), userLogin);
 
-        LocalDate userBirthday = newUser.getBirthday();
-        birthdayValidation(userBirthday);
-
-        User user = User.builder()
-                .id(createID())
-                .email(userEmail)
-                .login(userLogin)
-                .birthday(userBirthday)
-                .build();
-
-        String userName = newUser.getName();
-        if (nameValidationFailed(userName)) {
-            user.setName(userLogin);
-        } else {
-            user.setName(userName);
-        }
-
-        users.put(user.getId(), user);
-        return user;
+        newUser.setId(createID());
+        users.put(newUser.getId(), newUser);
+        return newUser;
     }
 
     public User updateUser(User updatedUser) throws ValidationException {
@@ -56,27 +37,15 @@ public class UsersManager {
 
         String updatedEmail = updatedUser.getEmail();
         emailValidation(updatedEmail);
-
-        String updatedLogin = updatedUser.getLogin();
-        loginValidation(updatedLogin);
-
         LocalDate updatedBirthday = updatedUser.getBirthday();
         birthdayValidation(updatedBirthday);
 
-        User userByID = users.get(id);
+        String updatedLogin = updatedUser.getLogin();
+        loginValidation(updatedLogin);
+        chooseLoginOrName(updatedUser, updatedUser.getName(), updatedLogin);
 
-        String updatedName = updatedUser.getName();
-        if (nameValidationFailed(updatedName)) {
-            userByID.setName(updatedLogin);
-        } else {
-            userByID.setName(updatedName);
-        }
-
-        userByID.setEmail(updatedEmail);
-        userByID.setLogin(updatedLogin);
-        userByID.setBirthday(updatedBirthday);
-
-        return userByID;
+        users.put(id, updatedUser);
+        return updatedUser;
     }
 
     public void emailValidation(String email) {
@@ -125,5 +94,17 @@ public class UsersManager {
     public List<User> getUsersList() {
         List<User> list = new ArrayList<>(users.values());
         return list;
+    }
+
+    private void chooseLoginOrName(User user, String name, String login) {
+        if (nameValidationFailed(name)) {
+            user.setName(login);
+        } else {
+            user.setName(name);
+        }
+    }
+
+    private int createID() {
+        return ++currentID;
     }
 }

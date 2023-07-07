@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.util.Managers;
 
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DisplayName("FilmManagerTests должен ")
 public class FilmManagerTests {
     FilmsManager filmsManager;
-    HashMap<Integer, Film> films;
+    Map<Integer, Film> films;
 
     @BeforeEach
     public void createUserManager() {
@@ -126,7 +126,7 @@ public class FilmManagerTests {
                 () -> filmsManager.createFilm(film)
         );
 
-        assertEquals("🔹поле \"duration\" не может быть отрицательным!", exception.getMessage());
+        assertEquals("🔹поле \"duration\" не может быть отрицательным или равно нулю!", exception.getMessage());
         assertEquals(0, films.size(), "размер мапы != 0");
     }
 }

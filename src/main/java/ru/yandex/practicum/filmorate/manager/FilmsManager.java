@@ -8,41 +8,24 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class FilmsManager {
     int currentID;
 
-    private HashMap<Integer, Film> films = new HashMap();
-
-    public int createID() {
-        ++currentID;
-        return currentID;
-    }
+    private Map<Integer, Film> films = new HashMap();
 
     public Film createFilm(Film newFilm) throws ValidationException, NullPointerException {
-        String filmName = newFilm.getName();
-        nameValidation(filmName);
+        nameValidation(newFilm.getName());
+        descriptionValidation(newFilm.getDescription());
+        releaseDateValidation(newFilm.getReleaseDate());
+        durationValidation(newFilm.getDuration());
 
-        String filmDescription = newFilm.getDescription();
-        descriptionValidation(filmDescription);
+        newFilm.setId(createID());
+        films.put(newFilm.getId(), newFilm);
 
-        LocalDate filmRelease = newFilm.getReleaseDate();
-        releaseDateValidation(filmRelease);
-
-        int filmDuration = newFilm.getDuration();
-        durationValidation(filmDuration);
-
-        Film film = Film.builder()
-                .id(createID())
-                .name(filmName)
-                .description(filmDescription)
-                .releaseDate(filmRelease)
-                .duration(filmDuration)
-                .build();
-
-        films.put(film.getId(), film);
-        return film;
+        return newFilm;
     }
 
     public Film updateFilm(Film updatedFilm) throws ValidationException {
@@ -50,37 +33,19 @@ public class FilmsManager {
         if (!films.containsKey(id)) {
             throw new ValidationException("пользователь с id: " + id + " не существует!");
         }
+        nameValidation(updatedFilm.getName());
+        descriptionValidation(updatedFilm.getDescription());
+        releaseDateValidation(updatedFilm.getReleaseDate());
+        durationValidation(updatedFilm.getDuration());
 
-        String updatedName = updatedFilm.getName();
-        nameValidation(updatedName);
-
-        String updatedDescription = updatedFilm.getDescription();
-        descriptionValidation(updatedDescription);
-
-        LocalDate updatedReleaseDate = updatedFilm.getReleaseDate();
-        releaseDateValidation(updatedReleaseDate);
-
-        int updatedDuration = updatedFilm.getDuration();
-        durationValidation(updatedDuration);
-
-        Film filmByID = films.get(updatedFilm.getId());
-        filmByID.setName(updatedName);
-        filmByID.setDescription(updatedDescription);
-        filmByID.setReleaseDate(updatedReleaseDate);
-        filmByID.setDuration(updatedDuration);
-
-        return filmByID;
+        films.put(id, updatedFilm);
+        return updatedFilm;
     }
 
     public void nameValidation(String name) throws ValidationException {
         if (name != null) {
-            if (name.equals("null") || name.isBlank()) {
+            if (name.isBlank()) {
                 throw new ValidationException("поле \"name\" должно быть заполнено!");
-            }
-            for (Film film : films.values()) {
-                if (film.getName().equals(name)) {
-                    throw new ValidationException("фильм с таким name уже существует!");
-                }
             }
         } else {
             throw new ValidationException("поле \"name\" должно быть заполнено!");
@@ -108,14 +73,18 @@ public class FilmsManager {
         }
     }
 
-    public void durationValidation(int duration) {
-        if (duration < 0) {
-            throw new ValidationException("поле \"duration\" не может быть отрицательным!");
+    public void durationValidation(double duration) {
+        if (duration < 0.1) {
+            throw new ValidationException("поле \"duration\" не может быть отрицательным или равно нулю!");
         }
     }
 
     public List<Film> getFilmsList() {
         List<Film> list = new ArrayList<>(films.values());
         return list;
+    }
+
+    private int createID() {
+        return ++currentID;
     }
 }
