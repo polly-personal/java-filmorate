@@ -2,7 +2,8 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.manager.FilmsManager;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.util.Managers;
 
@@ -12,21 +13,21 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@DisplayName("FilmManagerTests должен ")
-public class FilmManagerTests {
-    FilmsManager filmsManager;
-    Map<Integer, Film> films;
+@DisplayName("FilmServiceTests должен ")
+public class FilmServiceTests {
+    FilmService filmService;
+    Map<Long, Film> films;
 
     @BeforeEach
     public void createUserManager() {
-        filmsManager = Managers.getDefaultFilmsManager();
-        films = filmsManager.getFilms();
+        filmService = Managers.getDefaultFilmService(new UserService());
+        films = filmService.getFilms();
     }
 
     @AfterEach
     public void clearFilmManager() {
         films.clear();
-        filmsManager.setCurrentID(0);
+        filmService.setCurrentID(0);
     }
 
     @DisplayName("создать фильм")
@@ -40,7 +41,7 @@ public class FilmManagerTests {
                 .releaseDate(releaseDate)
                 .duration(120)
                 .build();
-        Film createdFilm = filmsManager.createFilm(film);
+        Film createdFilm = filmService.createFilm(film);
 
         assertEquals(1, createdFilm.getId(), "ID созданного фильма != 1");
         assertEquals("filmName", createdFilm.getName());
@@ -60,10 +61,10 @@ public class FilmManagerTests {
 
         ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> filmsManager.createFilm(film)
+                () -> filmService.createFilm(film)
         );
 
-        assertEquals("🔹поле \"name\" должно быть заполнено!", exception.getMessage());
+        assertEquals("🔹поле \"name\" должно быть заполнено", exception.getMessage());
         assertEquals(0, films.size(), "размер мапы != 0");
     }
 
@@ -81,10 +82,10 @@ public class FilmManagerTests {
 
         ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> filmsManager.createFilm(film)
+                () -> filmService.createFilm(film)
         );
 
-        assertEquals("🔹длина description больше 200 символов!", exception.getMessage());
+        assertEquals("🔹длина description больше 200 символов", exception.getMessage());
         assertEquals(0, films.size(), "размер мапы != 0");
     }
 
@@ -102,7 +103,7 @@ public class FilmManagerTests {
 
         ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> filmsManager.createFilm(film)
+                () -> filmService.createFilm(film)
         );
 
         assertEquals("🔹\"releaseDate\" не может быть раньше, чем 1895/12/28", exception.getMessage());
@@ -123,10 +124,10 @@ public class FilmManagerTests {
 
         ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> filmsManager.createFilm(film)
+                () -> filmService.createFilm(film)
         );
 
-        assertEquals("🔹поле \"duration\" не может быть отрицательным или равно нулю!", exception.getMessage());
+        assertEquals("🔹поле \"duration\" не может быть отрицательным или равно нулю", exception.getMessage());
         assertEquals(0, films.size(), "размер мапы != 0");
     }
 }

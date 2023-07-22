@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.ValidationExceptionForResponse;
-import ru.yandex.practicum.filmorate.manager.FilmsManager;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.util.Managers;
 
 import java.util.List;
 
@@ -14,40 +13,69 @@ import java.util.List;
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private FilmsManager filmsManager = Managers.getDefaultFilmsManager();
+    private FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
+
+    @PostMapping
+    public Film createFilm(@RequestBody Film newFilm) throws ValidationException {
+        Film film = filmService.createFilm(newFilm);
+        log.info("🟩 добавлен фильм: " + film);
+        return film;
+    }
+
+    @GetMapping("/{id}")
+    public Film getById(@PathVariable long id) throws ValidationException {
+        Film film = filmService.getById(id);
+        log.info("🟩 выдан фильм: " + film);
+        return film;
+    }
 
     @GetMapping
     public List<Film> getFilmsList() {
-        List<Film> films = filmsManager.getFilmsList();
+        List<Film> films = filmService.getFilmsList();
         log.info("🟩 список фильмов выдан: " + films);
         return films;
     }
 
-    @PostMapping
-    public Film createUser(@RequestBody Film newFilm) throws ValidationException, ValidationExceptionForResponse {
-        try {
-            Film createdFilm = filmsManager.createFilm(newFilm);
-            log.info("🟩 добавлен фильм: " + createdFilm);
-            return createdFilm;
-        } catch (ValidationException e) {
-            log.info("🟩 фильм НЕ добавлен");
-            log.warn("🟥" + e.getMessage());
-            System.out.println("⬛️" + e.getMessage());
-            throw new ValidationExceptionForResponse();
-        }
+    @PutMapping
+    public Film updateFilm(@RequestBody Film updatedFilm) throws ValidationException {
+        Film film = filmService.updateFilm(updatedFilm);
+        log.info("🟩 фильм обновлен: " + film);
+        return film;
     }
 
-    @PutMapping
-    public Film updateFilm(@RequestBody Film updatedFilm) throws ValidationException, ValidationExceptionForResponse {
-        try {
-            Film currentFilm = filmsManager.updateFilm(updatedFilm);
-            log.info("🟩 фильм обновлен: " + currentFilm);
-            return currentFilm;
-        } catch (ValidationException e) {
-            log.info("🟩 фильм НЕ обновлен");
-            log.warn("🟥" + e.getMessage());
-            System.out.println("⬛️" + e.getMessage());
-            throw new ValidationExceptionForResponse();
-        }
+    @DeleteMapping("/{id}")
+    public String deleteFilm(@PathVariable long id) throws ValidationException {
+        String responseMessage = filmService.deleteFilm(id);
+        log.info("🟩 удален фильм по id: " + id);
+        return responseMessage;
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public Film addLike(@PathVariable long id, @PathVariable long userId) {
+        Film film = filmService.addLike(id, userId);
+        log.info("🟩 фильму по id: " + id + ", добавлен лайк: " + filmService.getById(id) + " по userId:" + userId);
+
+        return film;
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public Film deleteLike(@PathVariable long id, @PathVariable long userId) {
+        Film film = filmService.deleteLike(id, userId);
+        log.info("🟩 для фильма по id: " + id + ", удален лайк: " + filmService.getById(id) + " по userId:" + userId);
+
+        return film;
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
+        List<Film> films = filmService.getPopular(count);
+        log.info("🟩 выдан список популярных фильмов");
+
+        return films;
     }
 }

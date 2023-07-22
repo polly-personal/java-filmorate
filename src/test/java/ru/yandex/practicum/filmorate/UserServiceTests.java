@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.manager.UsersManager;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.util.Managers;
 
@@ -12,21 +12,21 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@DisplayName("UserManagerTests должен ")
-class UserManagerTests {
-    UsersManager usersManager;
-    Map<Integer, User> users;
+@DisplayName("UserServiceTests должен ")
+class UserServiceTests {
+    UserService userService;
+    Map<Long, User> users;
 
     @BeforeEach
     public void createUserManager() {
-        usersManager = Managers.getDefaultUsersManager();
-        users = usersManager.getUsers();
+        userService = Managers.getDefaultUsersService();
+        users = userService.getUsers();
     }
 
     @AfterEach
     public void clearUserManager() {
         users.clear();
-        usersManager.setCurrentID(0);
+        userService.setCurrentID(0);
     }
 
     @DisplayName("создать пользователя")
@@ -34,15 +34,13 @@ class UserManagerTests {
     void createUser() {
         LocalDate birthday = LocalDate.of(2021, 6, 7);
         User user = User.builder()
-                .id(0)
                 .email("some@yandex.ru")
                 .login("userLogin")
                 .name("userName")
                 .birthday(birthday)
                 .build();
-        User createdUser = usersManager.createUser(user);
+        User createdUser = userService.createUser(user);
 
-        assertEquals(1, createdUser.getId(), "ID созданного пользователя != 1");
         assertEquals("some@yandex.ru", createdUser.getEmail());
         assertEquals(1, users.size(), "размер мапы != 1");
     }
@@ -52,7 +50,6 @@ class UserManagerTests {
     void doNotCreateUserWithIncorrectEmail() {
         LocalDate birthday = LocalDate.of(2021, 6, 7);
         User user = User.builder()
-                .id(0)
                 .email("someyandex.ru")
                 .login("userLogin")
                 .name("userName")
@@ -61,10 +58,10 @@ class UserManagerTests {
 
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> usersManager.createUser(user)
+                () -> userService.createUser(user)
         );
 
-        assertEquals("🔹некорректный email! ваш email: someyandex.ru", exception.getMessage());
+        assertEquals("🔹некорректный email. ваш email: someyandex.ru", exception.getMessage());
         assertEquals(0, users.size(), "размер мапы != 0");
     }
 
@@ -82,7 +79,7 @@ class UserManagerTests {
 
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> usersManager.createUser(user)
+                () -> userService.createUser(user)
         );
 
         assertEquals("🔹некорректный login", exception.getMessage());
@@ -99,7 +96,7 @@ class UserManagerTests {
                 .login("userLogin")
                 .birthday(birthday)
                 .build();
-        User createdUser = usersManager.createUser(user);
+        User createdUser = userService.createUser(user);
 
         assertEquals(1, createdUser.getId(), "ID созданного пользователя != 1");
         assertEquals("userLogin", createdUser.getName());
@@ -120,7 +117,7 @@ class UserManagerTests {
 
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> usersManager.createUser(user)
+                () -> userService.createUser(user)
         );
 
         assertEquals("🔹birthday не может быть в будущем", exception.getMessage());
