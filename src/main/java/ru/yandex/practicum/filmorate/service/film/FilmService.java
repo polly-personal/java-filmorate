@@ -113,9 +113,9 @@ public class FilmService implements FilmStorage {
     public List<Film> getPopular(int count) {
         countForPopularValidation(count);
 
-        List<Film> pop = films.values().
-                stream().
-                sorted((film1, film2) -> {
+        List<Film> pop = films.values()
+                .stream()
+                .sorted((film1, film2) -> {
                     int comp;
                     if (film1.getLikes() == null || film2.getLikes() == null) {
                         comp = 0;
