@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Data
 @Service
@@ -111,21 +110,53 @@ public class FilmService implements FilmStorage {
     }
 
     public List<Film> getPopular(int count) {
-        countForPopularValidation(count);
+        Comparator<Film> comparator = new Comparator<Film>() {
+            @Override
+            public int compare(Film f1, Film f2) {
+                Set<Long> likes1 = f1.getLikes();
+                Set<Long> likes2 = f2.getLikes();
+                int counter;
 
-        List<Film> pop = films.values()
-                .stream()
-                .sorted((film1, film2) -> {
-                    int comp;
-                    if (film1.getLikes() == null || film2.getLikes() == null) {
-                        comp = 0;
-                    } else {
-                        comp = film1.getLikes().size() - film2.getLikes().size();
+                if (likes1 != null && likes2 != null) {
+                    int size1 = likes1.size();
+                    int size2 = likes2.size();
+                    if (size1 != size2) {
+                        counter = size1 - size2;
+                        return counter;
                     }
-                    return comp * -1;
-                })
-                .collect(Collectors.toList());
-        return pop.subList(0, count);
+                    counter = 0;
+                    return counter;
+                }
+
+                if (likes1 == null && likes2 == null) {
+                    counter = (int) f1.getId() - (int) f2.getId();
+                    return counter;
+                }
+
+                if (likes1 != null) {
+                    counter = 1;
+                    return counter;
+                }
+                counter = -1;
+                return counter;
+            }
+        };
+
+        List<Film> arrayList = new ArrayList<>(films.values());
+        Collections.sort(arrayList, comparator.reversed());
+
+        if (arrayList.size() >= 10) {
+            if (count <= arrayList.size()) {
+                return arrayList.subList(0, count);
+            }
+            return arrayList.subList(0, 10);
+        } else {
+
+            if (count < 10 && count < arrayList.size()) {
+                return arrayList.subList(0, count);
+            }
+            return arrayList.subList(0, arrayList.size());
+        }
     }
 
     private long createID() {
@@ -134,7 +165,7 @@ public class FilmService implements FilmStorage {
 
     private void idValidation(long id) throws ValidationException, IdNotFoundException {
         if (id <= 0) {
-            throw new ValidationException("ваш id: " + id + " отрицательный либо равен 0");
+            throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
         }
         if (!films.containsKey(id)) {
             throw new IdNotFoundException("фильм с id: " + id + " не существует");
@@ -196,10 +227,7 @@ public class FilmService implements FilmStorage {
 
     private void countForPopularValidation(int count) {
         if (count <= 0) {
-            throw new ValidationException("некорректный параметр запроса count: " + count);
-        }
-        if (count > films.size()) {
-            throw new ValidationException("параметр запроса count: " + count + " -- больше, чем существущих фильмов на данный момент: " + films.size());
+            throw new ValidationException("некорректный параметр запроса -- count: " + count);
         }
     }
 }

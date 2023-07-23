@@ -122,21 +122,21 @@ public class UserService implements UserStorage {
 
         User user = users.get(id);
         Set<Long> userFriendIds = user.getFriendIds();
-        friendsListValidation(userFriendIds);
 
         User otherUser = users.get(otherId);
         Set<Long> otherUserFriendsIds = otherUser.getFriendIds();
-        friendsListValidation(otherUserFriendsIds);
 
         List<User> commonFriendsList = new ArrayList<>();
-        for (Long userFriendId : userFriendIds) {
-            for (Long otherUserFriendId : otherUserFriendsIds) {
-                if (userFriendId.equals(otherUserFriendId)) {
-                    commonFriendsList.add(users.get(userFriendId));
+
+        if (!friendsListIsEmpty(userFriendIds) && !friendsListIsEmpty(otherUserFriendsIds)) {
+            for (Long userFriendId : userFriendIds) {
+                for (Long otherUserFriendId : otherUserFriendsIds) {
+                    if (userFriendId != null && otherUserFriendId != null && userFriendId.equals(otherUserFriendId)) {
+                        commonFriendsList.add(users.get(userFriendId));
+                    }
                 }
             }
         }
-
         return commonFriendsList;
     }
 
@@ -162,7 +162,7 @@ public class UserService implements UserStorage {
 
     public void idValidation(long id) throws ValidationException, IdNotFoundException {
         if (id <= 0) {
-            throw new ValidationException("ваш id: " + id + " отрицательный либо равен 0");
+            throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
         }
         if (!users.containsKey(id)) {
             throw new IdNotFoundException("пользователь с id: " + id + " не существует");
