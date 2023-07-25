@@ -5,8 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.service.film.FilmServiceImpl;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -16,12 +18,12 @@ public class FilmController {
     private FilmService filmService;
 
     @Autowired
-    public FilmController(FilmService filmService) {
+    public FilmController(FilmServiceImpl filmService) {
         this.filmService = filmService;
     }
 
     @PostMapping
-    public Film createFilm(@RequestBody Film newFilm) throws ValidationException {
+    public Film createFilm(@Valid @RequestBody Film newFilm) throws ValidationException {
         Film film = filmService.createFilm(newFilm);
         log.info("🟩 добавлен фильм: " + film);
         return film;
@@ -42,7 +44,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film updatedFilm) throws ValidationException {
+    public Film updateFilm(@Valid @RequestBody Film updatedFilm) throws ValidationException {
         Film film = filmService.updateFilm(updatedFilm);
         log.info("🟩 фильм обновлен: " + film);
         return film;

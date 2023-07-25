@@ -6,13 +6,13 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.List;
 
 public interface FilmStorage {
-    public Film createFilm(Film newFilm) throws ValidationException;
+    Film createFilm(Film newFilm) throws ValidationException;
 
-    public Film getById(long id) throws ValidationException;
+    Film getById(long id) throws ValidationException;
 
-    public List<Film> getFilmsList();
+    List<Film> getFilmsList();
 
-    public Film updateFilm(Film updatedFilm) throws ValidationException;
+    Film updateFilm(Film updatedFilm) throws ValidationException;
 
-    public String deleteFilm(long id) throws ValidationException;
+    String deleteFilm(long id) throws ValidationException;
 }
