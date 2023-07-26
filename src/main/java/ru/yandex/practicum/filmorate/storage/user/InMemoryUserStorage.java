@@ -71,6 +71,7 @@ public class InMemoryUserStorage implements UserStorage {
     private void emailValidation(String email) throws ValidationException {
         for (User user : users.values()) {
             if (user.getEmail().equals(email)) {
+                System.out.println("изменение для pull request");
                 throw new ValidationException("пользователь с таким email уже существует");
             }
         }
