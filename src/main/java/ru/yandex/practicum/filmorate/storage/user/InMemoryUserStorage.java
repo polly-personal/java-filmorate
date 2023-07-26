@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @Component
@@ -64,7 +63,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     private void userValidation(User user) {
         emailValidation(user.getEmail());
-        birthdayValidation(user.getBirthday());
 
         String userLogin = user.getLogin();
         chooseLoginOrName(user, user.getName(), userLogin);
@@ -75,12 +73,6 @@ public class InMemoryUserStorage implements UserStorage {
             if (user.getEmail().equals(email)) {
                 throw new ValidationException("пользователь с таким email уже существует");
             }
-        }
-    }
-
-    private void birthdayValidation(LocalDate birthday) throws ValidationException {
-        if (birthday.isAfter(LocalDate.now())) {
-            throw new ValidationException("birthday не может быть в будущем");
         }
     }
 

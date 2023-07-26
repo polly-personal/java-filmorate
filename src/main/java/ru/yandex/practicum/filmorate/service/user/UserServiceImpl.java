@@ -43,10 +43,7 @@ public class UserServiceImpl implements UserService {
     public User addFriend(long id, long friendId) throws ValidationException, IdNotFoundException {
         inMemoryUserStorage.idValidation(id);
         inMemoryUserStorage.idValidation(friendId);
-        User user = getUsersList().stream()
-                .filter(userFromList -> userFromList.getId() == id)
-                .findFirst()
-                .get();
+        User user = getById(id);
         Set<Long> userFriendsIds = user.getFriendIds();
         if (friendsListIsEmpty(userFriendsIds)) {
             userFriendsIds = new HashSet<>();
@@ -54,10 +51,7 @@ public class UserServiceImpl implements UserService {
         userFriendsIds.add(friendId);
         user.setFriendIds(userFriendsIds);
 
-        User friend = getUsersList().stream()
-                .filter(userFromList -> userFromList.getId() == friendId)
-                .findFirst()
-                .get();
+        User friend = getById(friendId);
         Set<Long> friendFriendsIds = friend.getFriendIds();
         if (friendsListIsEmpty(friendFriendsIds)) {
             friendFriendsIds = new HashSet<>();
@@ -72,18 +66,12 @@ public class UserServiceImpl implements UserService {
         inMemoryUserStorage.idValidation(id);
         inMemoryUserStorage.idValidation(friendId);
 
-        User user = getUsersList().stream()
-                .filter(userFromList -> userFromList.getId() == id)
-                .findFirst()
-                .get();
+        User user = getById(id);
         Set<Long> userFriendsIds = user.getFriendIds();
         friendsListValidation(userFriendsIds, friendId);
         userFriendsIds.remove(friendId);
 
-        User friend = getUsersList().stream()
-                .filter(userFromList -> userFromList.getId() == friendId)
-                .findFirst()
-                .get();
+        User friend = getById(friendId);
         Set<Long> friendFriendsIds = friend.getFriendIds();
         friendsListValidation(friendFriendsIds, id);
         friendFriendsIds.remove(id);
@@ -93,20 +81,14 @@ public class UserServiceImpl implements UserService {
 
     public List<User> getFriends(long id) throws ValidationException, IdNotFoundException, FriendsListNotFoundException {
         inMemoryUserStorage.idValidation(id);
-        User user = getUsersList().stream()
-                .filter(userFromList -> userFromList.getId() == id)
-                .findFirst()
-                .get();
+        User user = getById(id);
 
         Set<Long> friendsIds = user.getFriendIds();
         friendsListValidation(friendsIds);
 
         List<User> friendsList = new ArrayList<>();
         for (Long friendId : friendsIds) {
-            User friend = getUsersList().stream()
-                    .filter(userFromList -> userFromList.getId() == friendId)
-                    .findFirst()
-                    .get();
+            User friend = getById(friendId);
             friendsList.add(friend);
         }
 
@@ -117,16 +99,10 @@ public class UserServiceImpl implements UserService {
         inMemoryUserStorage.idValidation(id);
         inMemoryUserStorage.idValidation(otherId);
 
-        User user = getUsersList().stream()
-                .filter(userFromList -> userFromList.getId() == id)
-                .findFirst()
-                .get();
+        User user = getById(id);
         Set<Long> userFriendIds = user.getFriendIds();
 
-        User otherUser = getUsersList().stream()
-                .filter(userFromList -> userFromList.getId() == otherId)
-                .findFirst()
-                .get();
+        User otherUser = getById(otherId);
         Set<Long> otherUserFriendsIds = otherUser.getFriendIds();
 
         List<User> commonFriendsList = new ArrayList<>();
@@ -139,12 +115,8 @@ public class UserServiceImpl implements UserService {
         return commonFriendsList;
     }
 
-    public boolean likedFilmsListIsEmpty(Set<Long> likedFilms) {
-        return likedFilms == null;
-    }
-
     public void likedFilmsListValidation(Set<Long> likes, long filmId) throws ValidationException {
-        if (likedFilmsListIsEmpty(likes)) {
+        if (likes == null) {
             throw new FriendsListNotFoundException("у пользователя нет лайков");
         }
         if (!likes.contains(filmId)) {

@@ -49,10 +49,7 @@ public class FilmServiceImpl implements FilmService {
         filmStorage.idValidation(id);
         userStorage.idValidation(userId);
 
-        Film film = getFilmsList().stream()
-                .filter(filmFromList -> filmFromList.getId() == id)
-                .findFirst()
-                .get();
+        Film film = getById(id);
         Set<Long> likes = film.getLikes();
         if (likeListIsEmpty(likes)) {
             likes = new HashSet<>();
@@ -60,12 +57,9 @@ public class FilmServiceImpl implements FilmService {
         likes.add(userId);
         film.setLikes(likes);
 
-        User user = userStorage.getUsersList().stream()
-                .filter(userFromList -> userFromList.getId() == userId)
-                .findFirst()
-                .get();
+        User user = userStorage.getById(userId);
         Set<Long> likedFilms = user.getLikedFilms();
-        if (userServiceImpl.likedFilmsListIsEmpty(likedFilms)) {
+        if (likedFilms == null) {
             likedFilms = new HashSet<>();
         }
         likedFilms.add(id);
@@ -78,18 +72,12 @@ public class FilmServiceImpl implements FilmService {
         filmStorage.idValidation(id);
         userStorage.idValidation(userId);
 
-        Film film = getFilmsList().stream()
-                .filter(filmFromList -> filmFromList.getId() == id)
-                .findFirst()
-                .get();
+        Film film = getById(id);
         Set<Long> filmLikes = film.getLikes();
         likesListValidation(filmLikes, userId);
         filmLikes.remove(userId);
 
-        User user = userStorage.getUsersList().stream()
-                .filter(userFromList -> userFromList.getId() == userId)
-                .findFirst()
-                .get();
+        User user = userStorage.getById(userId);
         Set<Long> userLikes = user.getLikedFilms();
         userServiceImpl.likedFilmsListValidation(userLikes, id);
         userLikes.remove(id);
