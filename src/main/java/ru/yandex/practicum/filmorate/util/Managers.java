@@ -1,14 +1,14 @@
 package ru.yandex.practicum.filmorate.util;
 
-import ru.yandex.practicum.filmorate.manager.*;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 public class Managers {
-
-    public static UsersManager getDefaultUsersManager() {
-        return new UsersManager();
+    public static InMemoryUserStorage getDefaultInMemoryUserStorage() {
+        return new InMemoryUserStorage();
     }
 
-    public static FilmsManager getDefaultFilmsManager() {
-        return new FilmsManager();
+    public static InMemoryFilmStorage getDefaultInMemoryFilmStorage() {
+        return new InMemoryFilmStorage();
     }
 }
