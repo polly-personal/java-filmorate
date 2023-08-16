@@ -30,7 +30,7 @@ public class User {
     private LocalDate birthday;
 
     @JsonIgnore
-    private Set<Long> friendIds;
+    private Set<Long> friendsIds;
     @JsonIgnore
-    private Set<Long> likedFilms;
+    private Set<Long> likedFilmsIds;
 }

@@ -14,10 +14,10 @@ import java.util.Set;
 @Builder
 public class Film {
 
+    private long id;
+
     @NotBlank(message = "поле \"name\" должно быть заполнено")
     private String name;
-
-    private long id;
 
     @Size(max = 200, message = "длина поля \"description\" не должна привышать 200 символов")
     private String description;
@@ -29,4 +29,8 @@ public class Film {
 
     @JsonIgnore
     private Set<Long> likes;
+
+    private Set<Genre> genres;
+
+    private String rating;
 }

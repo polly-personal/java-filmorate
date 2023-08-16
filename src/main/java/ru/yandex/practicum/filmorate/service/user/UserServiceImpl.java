@@ -44,20 +44,20 @@ public class UserServiceImpl implements UserService {
         inMemoryUserStorage.idValidation(id);
         inMemoryUserStorage.idValidation(friendId);
         User user = getById(id);
-        Set<Long> userFriendsIds = user.getFriendIds();
+        Set<Long> userFriendsIds = user.getFriendsIds();
         if (friendsListIsEmpty(userFriendsIds)) {
             userFriendsIds = new HashSet<>();
         }
         userFriendsIds.add(friendId);
-        user.setFriendIds(userFriendsIds);
+        user.setFriendsIds(userFriendsIds);
 
         User friend = getById(friendId);
-        Set<Long> friendFriendsIds = friend.getFriendIds();
+        Set<Long> friendFriendsIds = friend.getFriendsIds();
         if (friendsListIsEmpty(friendFriendsIds)) {
             friendFriendsIds = new HashSet<>();
         }
         friendFriendsIds.add(id);
-        friend.setFriendIds(friendFriendsIds);
+        friend.setFriendsIds(friendFriendsIds);
 
         return user;
     }
@@ -67,12 +67,12 @@ public class UserServiceImpl implements UserService {
         inMemoryUserStorage.idValidation(friendId);
 
         User user = getById(id);
-        Set<Long> userFriendsIds = user.getFriendIds();
+        Set<Long> userFriendsIds = user.getFriendsIds();
         friendsListValidation(userFriendsIds, friendId);
         userFriendsIds.remove(friendId);
 
         User friend = getById(friendId);
-        Set<Long> friendFriendsIds = friend.getFriendIds();
+        Set<Long> friendFriendsIds = friend.getFriendsIds();
         friendsListValidation(friendFriendsIds, id);
         friendFriendsIds.remove(id);
 
@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
         inMemoryUserStorage.idValidation(id);
         User user = getById(id);
 
-        Set<Long> friendsIds = user.getFriendIds();
+        Set<Long> friendsIds = user.getFriendsIds();
         friendsListValidation(friendsIds);
 
         List<User> friendsList = new ArrayList<>();
@@ -100,10 +100,10 @@ public class UserServiceImpl implements UserService {
         inMemoryUserStorage.idValidation(otherId);
 
         User user = getById(id);
-        Set<Long> userFriendIds = user.getFriendIds();
+        Set<Long> userFriendIds = user.getFriendsIds();
 
         User otherUser = getById(otherId);
-        Set<Long> otherUserFriendsIds = otherUser.getFriendIds();
+        Set<Long> otherUserFriendsIds = otherUser.getFriendsIds();
 
         List<User> commonFriendsList = new ArrayList<>();
         if (userFriendIds != null && otherUserFriendsIds != null) {

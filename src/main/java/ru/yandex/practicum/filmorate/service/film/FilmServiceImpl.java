@@ -58,12 +58,12 @@ public class FilmServiceImpl implements FilmService {
         film.setLikes(likes);
 
         User user = userStorage.getById(userId);
-        Set<Long> likedFilms = user.getLikedFilms();
+        Set<Long> likedFilms = user.getLikedFilmsIds();
         if (likedFilms == null) {
             likedFilms = new HashSet<>();
         }
         likedFilms.add(id);
-        user.setLikedFilms(likedFilms);
+        user.setLikedFilmsIds(likedFilms);
 
         return film;
     }
@@ -78,7 +78,7 @@ public class FilmServiceImpl implements FilmService {
         filmLikes.remove(userId);
 
         User user = userStorage.getById(userId);
-        Set<Long> userLikes = user.getLikedFilms();
+        Set<Long> userLikes = user.getLikedFilmsIds();
         userServiceImpl.likedFilmsListValidation(userLikes, id);
         userLikes.remove(id);
 
