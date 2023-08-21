@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -10,8 +8,10 @@ import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Builder
+@ToString
 public class Film {
 
     private long id;
@@ -27,10 +27,12 @@ public class Film {
 
     private double duration;
 
-    @JsonIgnore
-    private Set<Long> likes;
+    private long rate;
+
+    private long likes;
 
     private Set<Genre> genres;
 
-    private String rating;
+    @NotNull(message = "поле \"mpa\" должно быть заполнено")
+    private Mpa mpa;
 }

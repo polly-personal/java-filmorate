@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exception.FriendsListNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.service.user.UserService;
-import ru.yandex.practicum.filmorate.service.user.UserServiceImpl;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
@@ -20,7 +19,7 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    public UserController(UserServiceImpl userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 

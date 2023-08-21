@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
-import ru.yandex.practicum.filmorate.service.film.FilmServiceImpl;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.Valid;
@@ -18,7 +17,7 @@ public class FilmController {
     private FilmService filmService;
 
     @Autowired
-    public FilmController(FilmServiceImpl filmService) {
+    public FilmController(FilmService filmService) {
         this.filmService = filmService;
     }
 

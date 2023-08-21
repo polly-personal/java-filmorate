@@ -6,140 +6,79 @@ import ru.yandex.practicum.filmorate.exception.FriendsListNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.UserDao;
+import ru.yandex.practicum.filmorate.storage.dao.impl.UserDaoImpl;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private InMemoryUserStorage inMemoryUserStorage;
+    private UserDao userDao;
 
     @Autowired
-    public UserServiceImpl(InMemoryUserStorage inMemoryUserStorage) {
-        this.inMemoryUserStorage = inMemoryUserStorage;
+    public UserServiceImpl(UserDaoImpl userDao) {
+        this.userDao = userDao;
     }
 
+    @Override
     public User createUser(User newUser) throws ValidationException {
-        return inMemoryUserStorage.createUser(newUser);
+        return userDao.createUser(newUser);
     }
 
+    @Override
     public User getById(long id) throws ValidationException, IdNotFoundException {
-        return inMemoryUserStorage.getById(id);
+        return userDao.getById(id);
     }
 
+    @Override
     public List<User> getUsersList() {
-        return inMemoryUserStorage.getUsersList();
+        return userDao.getUsersList();
     }
 
+    @Override
     public User updateUser(User updatedUser) throws IdNotFoundException, ValidationException {
-        return inMemoryUserStorage.updateUser(updatedUser);
+        return userDao.updateUser(updatedUser);
     }
 
+    @Override
     public String deleteUser(long id) throws IdNotFoundException, ValidationException {
-        return inMemoryUserStorage.deleteUser(id);
+        return userDao.deleteUser(id);
     }
 
+    @Override
     public User addFriend(long id, long friendId) throws ValidationException, IdNotFoundException {
-        inMemoryUserStorage.idValidation(id);
-        inMemoryUserStorage.idValidation(friendId);
-        User user = getById(id);
-        Set<Long> userFriendsIds = user.getFriendsIds();
-        if (friendsListIsEmpty(userFriendsIds)) {
-            userFriendsIds = new HashSet<>();
-        }
-        userFriendsIds.add(friendId);
-        user.setFriendsIds(userFriendsIds);
-
-        User friend = getById(friendId);
-        Set<Long> friendFriendsIds = friend.getFriendsIds();
-        if (friendsListIsEmpty(friendFriendsIds)) {
-            friendFriendsIds = new HashSet<>();
-        }
-        friendFriendsIds.add(id);
-        friend.setFriendsIds(friendFriendsIds);
-
-        return user;
+        return userDao.addFriend(id, friendId);
     }
 
+    @Override
     public User deleteFriend(long id, long friendId) throws IdNotFoundException, ValidationException, FriendsListNotFoundException {
-        inMemoryUserStorage.idValidation(id);
-        inMemoryUserStorage.idValidation(friendId);
-
-        User user = getById(id);
-        Set<Long> userFriendsIds = user.getFriendsIds();
-        friendsListValidation(userFriendsIds, friendId);
-        userFriendsIds.remove(friendId);
-
-        User friend = getById(friendId);
-        Set<Long> friendFriendsIds = friend.getFriendsIds();
-        friendsListValidation(friendFriendsIds, id);
-        friendFriendsIds.remove(id);
-
-        return user;
+        return userDao.deleteFriend(id, friendId);
     }
 
+    @Override
     public List<User> getFriends(long id) throws ValidationException, IdNotFoundException, FriendsListNotFoundException {
-        inMemoryUserStorage.idValidation(id);
-        User user = getById(id);
+        Set<Long> friendsIds = userDao.getFriends(id);
+        if (friendsIds == null) {
+            return null;
+        }
 
-        Set<Long> friendsIds = user.getFriendsIds();
-        friendsListValidation(friendsIds);
-
-        List<User> friendsList = new ArrayList<>();
+        List<User> friends = new ArrayList<>();
         for (Long friendId : friendsIds) {
-            User friend = getById(friendId);
-            friendsList.add(friend);
+            friends.add(userDao.getById(friendId));
         }
 
-        return friendsList;
+        return friends;
     }
 
+    @Override
     public List<User> getCommonFriends(long id, long otherId) throws ValidationException, IdNotFoundException, FriendsListNotFoundException {
-        inMemoryUserStorage.idValidation(id);
-        inMemoryUserStorage.idValidation(otherId);
+        userDao.idValidation(id);
+        userDao.idValidation(otherId);
 
-        User user = getById(id);
-        Set<Long> userFriendIds = user.getFriendsIds();
+        List<User> friendsById = new ArrayList<>(getFriends(id));
+        List<User> friendsByOtherId = new ArrayList<>(getFriends(otherId));
 
-        User otherUser = getById(otherId);
-        Set<Long> otherUserFriendsIds = otherUser.getFriendsIds();
-
-        List<User> commonFriendsList = new ArrayList<>();
-        if (userFriendIds != null && otherUserFriendsIds != null) {
-            commonFriendsList = userFriendIds.stream()
-                    .filter(otherUserFriendsIds::contains)
-                    .map(inMemoryUserStorage::getById)
-                    .collect(Collectors.toList());
-        }
-        return commonFriendsList;
-    }
-
-    public void likedFilmsListValidation(Set<Long> likes, long filmId) throws ValidationException {
-        if (likes == null) {
-            throw new FriendsListNotFoundException("у пользователя нет лайков");
-        }
-        if (!likes.contains(filmId)) {
-            throw new ValidationException("у пользователя нет лайка для фильма с filmId: " + filmId);
-        }
-    }
-
-    private boolean friendsListIsEmpty(Set<Long> friends) {
-        return friends == null;
-    }
-
-    private void friendsListValidation(Set<Long> friends) throws FriendsListNotFoundException {
-        if (friendsListIsEmpty(friends)) {
-            throw new FriendsListNotFoundException("у пользователя нет друзей");
-        }
-    }
-
-    private void friendsListValidation(Set<Long> friends, long friendId) throws ValidationException {
-        if (friendsListIsEmpty(friends)) {
-            throw new FriendsListNotFoundException("у пользователя нет друзей");
-        }
-        if (!friends.contains(friendId)) {
-            throw new ValidationException("у пользователя нет друга с friendId: " + friendId);
-        }
+        friendsById.retainAll(friendsByOtherId);
+        return friendsById;
     }
 }

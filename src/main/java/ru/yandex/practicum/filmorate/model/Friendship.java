@@ -5,10 +5,12 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class Like {
-    @NotNull(message = "поле \"filmId\" должно быть заполнено")
-    private long filmId;
-
+public class Friendship {
     @NotNull(message = "поле \"userId\" должно быть заполнено")
     private long userId;
+
+    @NotNull(message = "поле \"friendId\" должно быть заполнено")
+    private long friendId;
+
+    private boolean isApproved;
 }
