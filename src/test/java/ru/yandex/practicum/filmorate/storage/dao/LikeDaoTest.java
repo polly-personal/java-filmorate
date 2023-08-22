@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,6 @@ class LikeDaoTest {
     private final FilmDao filmDao;
     private final LikeDao likeDao;
     private final UserDao userDao;
-    //    private final ManagerDatabaseDao managerDatabaseDao;
     private User defaultUser;
     private Film defaultFilm1;
     private Film defaultFilm2;
