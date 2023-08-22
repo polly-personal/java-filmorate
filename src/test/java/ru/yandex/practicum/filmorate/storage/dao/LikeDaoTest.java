@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.springframework.test.context.jdbc.Sql;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -32,7 +31,7 @@ class LikeDaoTest {
     private final FilmDao filmDao;
     private final LikeDao likeDao;
     private final UserDao userDao;
-//    private final ManagerDatabaseDao managerDatabaseDao;
+    //    private final ManagerDatabaseDao managerDatabaseDao;
     private User defaultUser;
     private Film defaultFilm1;
     private Film defaultFilm2;
@@ -76,12 +75,6 @@ class LikeDaoTest {
                         .build()
         );
     }
-
-//    @AfterEach
-//    public void refreshAllTabs() {
-//        managerDatabaseDao.deleteAllTabs();
-//        managerDatabaseDao.createAllTabs();
-//    }
 
     @DisplayName("добавить лайк фильму от пользователя")
     @Test
