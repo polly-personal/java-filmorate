@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Builder
+@AllArgsConstructor
 public class Genre {
     @NotNull(message = "поле \"id\" должно быть заполнено")
     private long id;

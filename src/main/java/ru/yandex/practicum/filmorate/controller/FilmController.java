@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private FilmService filmService;
+    private final FilmService filmService;
 
     @Autowired
     public FilmController(FilmService filmService) {
@@ -36,8 +36,8 @@ public class FilmController {
     }
 
     @GetMapping
-    public List<Film> getFilmsList() {
-        List<Film> films = filmService.getFilmsList();
+    public List<Film> getAllFilms() {
+        List<Film> films = filmService.getAllFilms();
         log.info("🟩 список фильмов выдан: " + films);
         return films;
     }
@@ -57,19 +57,15 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable long id, @PathVariable long userId) {
-        Film film = filmService.addLike(id, userId);
+    public void addLike(@PathVariable long id, @PathVariable long userId) {
+        filmService.addLike(id, userId);
         log.info("🟩 фильму по id: " + id + ", добавлен лайк: " + filmService.getById(id) + " по userId:" + userId);
-
-        return film;
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public Film deleteLike(@PathVariable long id, @PathVariable long userId) {
-        Film film = filmService.deleteLike(id, userId);
+    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
+        filmService.deleteLike(id, userId);
         log.info("🟩 для фильма по id: " + id + ", удален лайк: " + filmService.getById(id) + " по userId:" + userId);
-
-        return film;
     }
 
     @GetMapping("/popular")

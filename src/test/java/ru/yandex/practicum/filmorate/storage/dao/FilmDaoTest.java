@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -25,11 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Sql(scripts = {"/schema.sql", "/data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/delete_schema.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @DisplayName("FilmDaoTest должен ")
 class FilmDaoTest {
     private final UserDao userDao;
     private final FilmDao filmDao;
-    private final ManagerDatabaseDao managerDatabaseDao;
+    private final LikeDao likeDao;
     private User defaultUser;
     private Film defaultFilm1;
     private Film defaultFilm2;
@@ -68,12 +70,6 @@ class FilmDaoTest {
                 .build();
     }
 
-    @AfterEach
-    public void refreshAllTabs() {
-        managerDatabaseDao.deleteAllTabs();
-        managerDatabaseDao.createAllTabs();
-    }
-
     @DisplayName("создать пользователя и выдать его по его id")
     @Test
     public void createFilmAndGetById() {
@@ -90,7 +86,7 @@ class FilmDaoTest {
     public void getFilmsList() {
         filmDao.createFilm(defaultFilm1);
         filmDao.createFilm(defaultFilm2);
-        List<Film> returnedFilmsList = filmDao.getFilmsList();
+        List<Film> returnedFilmsList = filmDao.getAllFilms();
 
         assertEquals(2, returnedFilmsList.size(), "size списка фильмов != 2");
     }
@@ -112,42 +108,17 @@ class FilmDaoTest {
         Film returnedFilm = filmDao.createFilm(defaultFilm1);
         filmDao.deleteFilm(returnedFilm.getId());
 
-        List<Film> returnedFilmsList = filmDao.getFilmsList();
+        List<Film> returnedFilmsList = filmDao.getAllFilms();
         assertEquals(0, returnedFilmsList.size(), "size списка фильмов != 0");
     }
 
-    @DisplayName("добавить пользователю друга, (у \"друга\" нет друга)")
-    @Test
-    public void addLike() {
-        User returnedUser = userDao.createUser(defaultUser);
-        Film returnedFilm1 = filmDao.createFilm(defaultFilm1);
-        Film returnedFilm2 = filmDao.createFilm(defaultFilm2);
-        filmDao.addLike(returnedFilm2.getId(), returnedUser.getId());
-
-        List<Film> returnedPopularFilms = filmDao.getPopular(1);
-        assertEquals(1, returnedPopularFilms.size(), "size списка популярных фильмов != 1");
-    }
-
-    @DisplayName("удалить пользователю друга")
-    @Test
-    public void deleteLike() {
-        User returnedUser = userDao.createUser(defaultUser);
-        Film returnedFilm1 = filmDao.createFilm(defaultFilm1);
-        Film returnedFilm2 = filmDao.createFilm(defaultFilm2);
-        filmDao.addLike(returnedFilm2.getId(), returnedUser.getId());
-        filmDao.deleteLike(returnedFilm2.getId(), returnedUser.getId());
-
-        List<Film> returnedPopularFilms = filmDao.getPopular(10);
-        assertEquals(2, returnedPopularFilms.size(), "size списка популярных фильмов != 2");
-    }
-
-    @DisplayName("выдать список id друзей по id пользователя")
+    @DisplayName("выдать список популярных фильмов")
     @Test
     public void getPopular() {
         User returnedUser = userDao.createUser(defaultUser);
         Film returnedFilm1 = filmDao.createFilm(defaultFilm1);
         Film returnedFilm2 = filmDao.createFilm(defaultFilm2);
-        filmDao.addLike(returnedFilm2.getId(), returnedUser.getId());
+        likeDao.addLike(returnedFilm2.getId(), returnedUser.getId());
 
         List<Film> returnedPopularFilms = filmDao.getPopular(10);
         assertEquals(2, returnedPopularFilms.size(), "size списка популярных фильмов != 2");

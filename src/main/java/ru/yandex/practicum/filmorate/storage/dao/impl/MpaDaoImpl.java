@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.dao.MpaDao;
 
@@ -25,8 +24,6 @@ public class MpaDaoImpl implements MpaDao {
 
     @Override
     public Mpa getById(long id) {
-        idValidation(id);
-
         String sqlRequest = "SELECT * FROM PUBLIC.\"mpa\" WHERE id = ?";
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
 
@@ -39,7 +36,7 @@ public class MpaDaoImpl implements MpaDao {
             return mpa;
         }
 
-        return null;
+        throw new IdNotFoundException("введен несуществующий id: " + id);
     }
 
     @Override
@@ -48,20 +45,6 @@ public class MpaDaoImpl implements MpaDao {
         List<Mpa> mpas = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeMpa(resultSet));
 
         return mpas;
-    }
-
-    @Override
-    public void idValidation(long id) throws ValidationException, IdNotFoundException {
-        if (id <= 0) {
-            throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
-        }
-
-        String sqlRequest = "SELECT id FROM PUBLIC.\"mpa\" WHERE id = ?;";
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
-
-        if (!sqlRowSet.next()) {
-            throw new IdNotFoundException("введен несуществующий id: " + id);
-        }
     }
 
     private Mpa makeMpa(ResultSet rs) throws SQLException {

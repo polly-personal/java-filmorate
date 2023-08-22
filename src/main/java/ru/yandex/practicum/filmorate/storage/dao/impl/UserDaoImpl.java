@@ -32,9 +32,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User createUser(User newUser) throws ValidationException {
-        userValidation(newUser);
-
-        String sqlRequest = "INSERT INTO PUBLIC.\"user\" (email, login, name, birthday) VALUES (?, ?, ?, ?);";
+        String sqlRequest = "INSERT INTO PUBLIC.\"users\" (email, login, name, birthday) VALUES (?, ?, ?, ?);";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(
@@ -55,9 +53,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User getById(long id) throws ValidationException, IdNotFoundException {
-        idValidation(id);
-
-        String sqlRequest = "SELECT * FROM PUBLIC.\"user\" WHERE id = ?";
+        String sqlRequest = "SELECT * FROM PUBLIC.\"users\" WHERE id = ?";
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
 
         if (sqlRowSet.next()) {
@@ -71,12 +67,12 @@ public class UserDaoImpl implements UserDao {
                     .build();
             return user;
         }
-        return null;
+        throw new IdNotFoundException("введен несуществующий id: " + id);
     }
 
     @Override
-    public List<User> getUsersList() {
-        String sqlRequest = "SELECT * FROM PUBLIC.\"user\";";
+    public List<User> getAllUsers() {
+        String sqlRequest = "SELECT * FROM PUBLIC.\"users\";";
         List<User> users = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeUser(resultSet));
 
         return users;
@@ -85,18 +81,14 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User updateUser(User updatedUser) throws IdNotFoundException, ValidationException {
         long id = updatedUser.getId();
-        idValidation(id);
-
-        userValidation(updatedUser);
-
-        String sqlRequest = "UPDATE PUBLIC.\"user\" SET " +
+        String sqlUpdateRequest = "UPDATE PUBLIC.\"users\" SET " +
                 "email = ?, " +
                 "login = ?, " +
                 "name = ?, " +
                 "birthday = ? " +
                 "WHERE id = ?;";
         jdbcTemplate.update(
-                sqlRequest,
+                sqlUpdateRequest,
                 updatedUser.getEmail(),
                 updatedUser.getLogin(),
                 updatedUser.getName(),
@@ -108,9 +100,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public String deleteUser(long id) throws IdNotFoundException, ValidationException {
-        idValidation(id);
-
-        String sqlRequest = "DELETE FROM PUBLIC.\"user\" WHERE id = ?";
+        String sqlRequest = "DELETE FROM PUBLIC.\"users\" WHERE id = ?";
         jdbcTemplate.update(sqlRequest, id);
 
         return "пользователь с id: " + id + " удален";
@@ -118,9 +108,6 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User addFriend(long id, long friendId) throws ValidationException, IdNotFoundException {
-        idValidation(id);
-        idValidation(friendId);
-
         friendshipDao.sendFriendRequest(id, friendId);
         friendshipDao.approveFriendRequestForOneUserOnly(id, friendId);
 
@@ -130,9 +117,6 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User deleteFriend(long id, long friendId) throws IdNotFoundException, ValidationException,
             FriendsListNotFoundException {
-        idValidation(id);
-        idValidation(friendId);
-
         friendshipDao.deleteFriend(id, friendId);
         return getById(id);
     }
@@ -140,33 +124,18 @@ public class UserDaoImpl implements UserDao {
     @Override
     public Set<Long> getFriends(long id) throws ValidationException, IdNotFoundException,
             FriendsListNotFoundException {
-        idValidation(id);
-
         return friendshipDao.getFriendsIdsByUserId(id);
     }
 
     @Override
-    public void idValidation(long id) throws ValidationException, IdNotFoundException {
-        if (id <= 0) {
-            throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
+    public boolean emailIsValid(String email) throws ValidationException {
+        String sqlRequest = "SELECT * FROM PUBLIC.\"users\" WHERE email = ?;";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, email);
+
+        if (sqlRowSet.next()) {
+            return false;
         }
-
-        String sqlRequest = "SELECT id FROM PUBLIC.\"user\" WHERE id = ?;";
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
-
-        if (!sqlRowSet.next()) {
-            throw new IdNotFoundException("введен несуществующий id: " + id);
-        }
-    }
-
-    @Override
-    public void userValidation(User user) {
-        emailValidation(user.getEmail());
-
-        String login = user.getLogin();
-        loginValidation(login);
-
-        chooseLoginOrName(user, user.getName(), user.getLogin());
+        return true;
     }
 
     private User makeUser(ResultSet resultSet) throws SQLException {
@@ -178,34 +147,17 @@ public class UserDaoImpl implements UserDao {
                 .birthday(resultSet.getDate("birthday").toLocalDate()).build();
     }
 
-    private void emailValidation(String email) throws ValidationException {
-        String sqlRequest = "SELECT * FROM PUBLIC.\"user\" WHERE email = ?;";
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, email);
-
-        if (sqlRowSet.next()) {
-            throw new ValidationException("пользователь с таким email уже существует");
+    @Override
+    public void idValidation(long id) throws ValidationException, IdNotFoundException {
+        if (id <= 0) {
+            throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
         }
-    }
 
-    private void loginValidation(String login) throws ValidationException {
-        if (login.contains(" ")) {
-            throw new ValidationException("поле \"login\" должно быть без пробелов");
-        }
-    }
+        String sqlRequest = "SELECT id FROM PUBLIC.\"users\" WHERE id = ?;";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
 
-    private boolean nameIsEmpty(String name) {
-        if (name == null || name.isBlank()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private void chooseLoginOrName(User user, String name, String login) {
-        if (nameIsEmpty(name)) {
-            user.setName(login);
-        } else {
-            user.setName(name);
+        if (!sqlRowSet.next()) {
+            throw new IdNotFoundException("введен несуществующий id: " + id);
         }
     }
 }

@@ -12,7 +12,7 @@ public interface UserService {
 
     User getById(long id) throws ValidationException, IdNotFoundException;
 
-    List<User> getUsersList();
+    List<User> getAllUsers();
 
     User updateUser(User updatedUser) throws IdNotFoundException, ValidationException;
 
@@ -25,4 +25,6 @@ public interface UserService {
     List<User> getFriends(long id) throws ValidationException, IdNotFoundException, FriendsListNotFoundException;
 
     List<User> getCommonFriends(long id, long otherId) throws ValidationException, IdNotFoundException, FriendsListNotFoundException;
+
+    void idValidation(long id);
 }

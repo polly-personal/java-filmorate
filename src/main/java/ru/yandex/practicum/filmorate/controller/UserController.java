@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
@@ -38,8 +38,8 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getUsersList() {
-        List<User> users = userService.getUsersList();
+    public List<User> getAllUsers() {
+        List<User> users = userService.getAllUsers();
         log.info("🟩 список пользователей выдан: " + users);
         return users;
     }

@@ -17,7 +17,6 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.*;
 
 @Component
@@ -39,13 +38,11 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Film createFilm(Film newFilm) throws ValidationException {
-        filmValidation(newFilm);
-
         Mpa mpaById = mpaDao.getById(newFilm.getMpa().getId());
         newFilm.setMpa(mpaById);
 
         String sqlRequest =
-                "INSERT INTO PUBLIC.\"film\" (name, description, release_date, duration, rate, mpa_id) " +
+                "INSERT INTO PUBLIC.\"films\" (name, description, release_date, duration, rate, mpa_id) " +
                         "VALUES (?, ?, ?, ?, ?, ?);";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(
@@ -82,9 +79,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Film getById(long id) throws ValidationException {
-        idValidation(id);
-
-        String sqlRequest = "SELECT * FROM PUBLIC.\"film\" WHERE id = ?";
+        String sqlRequest = "SELECT * FROM PUBLIC.\"films\" WHERE id = ?";
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
 
         if (sqlRowSet.next()) {
@@ -101,13 +96,12 @@ public class FilmDaoImpl implements FilmDao {
 
             return film;
         }
-
-        return null;
+        throw new IdNotFoundException("введен несуществующий id: " + id);
     }
 
     @Override
-    public List<Film> getFilmsList() {
-        String sqlRequest = "SELECT * FROM PUBLIC.\"film\"";
+    public List<Film> getAllFilms() {
+        String sqlRequest = "SELECT * FROM PUBLIC.\"films\"";
         List<Film> films = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeFilm(resultSet));
 
         return films;
@@ -116,10 +110,8 @@ public class FilmDaoImpl implements FilmDao {
     @Override
     public Film updateFilm(Film updatedFilm) throws ValidationException {
         long id = updatedFilm.getId();
-        idValidation(id);
-        filmValidation(updatedFilm);
 
-        String sqlRequest = "UPDATE PUBLIC.\"film\" SET " +
+        String sqlRequest = "UPDATE PUBLIC.\"films\" SET " +
                 "name = ?, " +
                 "description = ?, " +
                 "release_date = ?, " +
@@ -144,59 +136,24 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public String deleteFilm(long id) throws ValidationException {
-        String sqlRequest = "DELETE FROM PUBLIC.\"film\" WHERE id = ?;";
+        String sqlRequest = "DELETE FROM PUBLIC.\"films\" WHERE id = ?;";
         jdbcTemplate.update(sqlRequest, id);
 
         return "фильм с id: " + id + " удален";
     }
 
     @Override
-    public Film addLike(long id, long userId) {
-        idValidation(id);
-        userDao.idValidation(userId);
-
-        likeDao.addLike(id, userId);
-        return getById(id);
-    }
-
-    @Override
-    public Film deleteLike(long id, long userId) {
-        idValidation(id);
-        userDao.idValidation(userId);
-
-        likeDao.deleteLike(id, userId);
-        return getById(id);
-    }
-
-    @Override
     public List<Film> getPopular(int count) {
-        countForPopularValidation(count);
-
         String request = "SELECT *, " +
                 "COUNT(l.user_id) AS film_likes " +
-                "FROM PUBLIC.\"film\" AS f " +
-                "LEFT JOIN  PUBLIC.\"like\" AS l  ON f.id = l.film_id " +
+                "FROM PUBLIC.\"films\" AS f " +
+                "LEFT JOIN  PUBLIC.\"likes\" AS l  ON f.id = l.film_id " +
                 "GROUP BY f.id " +
                 "ORDER BY film_likes DESC " +
                 "LIMIT ?";
         List<Film> films = jdbcTemplate.query(request, (resultSet, rowNum) -> makeFilm(resultSet), count);
 
         return films;
-    }
-
-    @Override
-    public void idValidation(long id) throws ValidationException, IdNotFoundException {
-        if (id <= 0) {
-            throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
-        }
-
-        String sqlRequest = "SELECT id FROM PUBLIC.\"film\" WHERE id = ?;";
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
-
-        if (!sqlRowSet.next()) {
-            throw new IdNotFoundException("введен несуществующий id: " + id);
-        }
-
     }
 
     private void addGenresById(long id, Set<Genre> genres) {
@@ -225,37 +182,5 @@ public class FilmDaoImpl implements FilmDao {
                 .genres(genreDao.getGenresByFilmId(resultSet.getLong("id")))
                 .mpa(mpaDao.getById(resultSet.getLong("mpa_id")))
                 .build();
-    }
-
-    private void filmValidation(Film film) {
-        descriptionValidation(film.getDescription());
-        releaseDateValidation(film.getReleaseDate());
-        durationValidation(film.getDuration());
-    }
-
-    private void descriptionValidation(String description) throws ValidationException {
-        if (description != null) {
-            if (description.isBlank()) {
-                throw new ValidationException("некорректный description");
-            }
-        }
-    }
-
-    private void releaseDateValidation(LocalDate releaseDate) throws ValidationException {
-        if (releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("\"releaseDate\" не может быть раньше, чем 1895/12/28");
-        }
-    }
-
-    private void durationValidation(double duration) throws ValidationException {
-        if (duration < 0.1) {
-            throw new ValidationException("поле \"duration\" не может быть отрицательным или равно нулю");
-        }
-    }
-
-    private void countForPopularValidation(int count) {
-        if (count <= 0) {
-            throw new ValidationException("некорректный параметр запроса -- count: " + count);
-        }
     }
 }

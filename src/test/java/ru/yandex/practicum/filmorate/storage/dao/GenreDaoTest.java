@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
+import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -17,11 +17,12 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Sql(scripts = {"/schema.sql", "/data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/delete_schema.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @DisplayName("GenreDaoTest должен ")
 class GenreDaoTest {
     private final GenreDao genreDao;
@@ -63,27 +64,5 @@ class GenreDaoTest {
 
         Set<Genre> returnedGenreSet = genreDao.getGenresByFilmId(returnedFilm.getId());
         assertEquals(1, returnedGenreSet.size(), "size списка жанров != 1");
-    }
-
-    @DisplayName("выдать исключение, при отрицательном id")
-    @Test
-    public void idValidationWithNegativeId() {
-        IdNotFoundException exception = assertThrows(
-                IdNotFoundException.class,
-                () -> genreDao.idValidation(-1)
-        );
-
-        assertEquals("🔹ваш id: -1 -- отрицательный либо равен 0", exception.getMessage());
-    }
-
-    @DisplayName("выдать исключение, при несуществующем id")
-    @Test
-    public void idValidationWithNonExistent() {
-        IdNotFoundException exception = assertThrows(
-                IdNotFoundException.class,
-                () -> genreDao.idValidation(9999)
-        );
-
-        assertEquals("🔹введен несуществующий id: 9999", exception.getMessage());
     }
 }

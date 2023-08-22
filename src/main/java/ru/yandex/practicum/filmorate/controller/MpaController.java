@@ -13,7 +13,7 @@ import java.util.List;
 @RequestMapping("/mpa")
 @Slf4j
 public class MpaController {
-    private MpaService mpaService;
+    private final MpaService mpaService;
 
     @Autowired
     public MpaController(MpaService mpaService) {

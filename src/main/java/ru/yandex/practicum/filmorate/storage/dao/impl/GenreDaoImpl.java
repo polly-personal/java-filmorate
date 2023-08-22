@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.dao.GenreDao;
 
@@ -27,9 +26,7 @@ public class GenreDaoImpl implements GenreDao {
 
     @Override
     public Genre getById(long id) {
-        idValidation(id);
-
-        String sqlRequest = "SELECT * FROM PUBLIC.\"genre\" WHERE id = ?";
+        String sqlRequest = "SELECT * FROM PUBLIC.\"genres\" WHERE id = ?";
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
 
         if (sqlRowSet.next()) {
@@ -40,13 +37,12 @@ public class GenreDaoImpl implements GenreDao {
 
             return genre;
         }
-
-        return null;
+        throw new IdNotFoundException("введен несуществующий id: " + id);
     }
 
     @Override
     public List<Genre> getGenreList() {
-        String sqlRequest = "SELECT * FROM PUBLIC.\"genre\" ORDER BY id;";
+        String sqlRequest = "SELECT * FROM PUBLIC.\"genres\" ORDER BY id;";
         List<Genre> genres = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeGenre(resultSet));
 
         return genres;
@@ -56,31 +52,16 @@ public class GenreDaoImpl implements GenreDao {
     public Set<Genre> getGenresByFilmId(long id) {
         String sqlRequest =
                 "SELECT g.id, g.name " +
-                        "FROM PUBLIC.\"film\" AS  f " +
+                        "FROM PUBLIC.\"films\" AS  f " +
 
                         "JOIN PUBLIC.\"film_genres\" AS fg ON f.id = fg.film_id " +
-                        "JOIN PUBLIC.\"genre\" AS g ON  fg.genre_id = g.id " +
+                        "JOIN PUBLIC.\"genres\" AS g ON  fg.genre_id = g.id " +
 
                         "WHERE f.id = ? " +
                         "ORDER BY g.id;";
         List<Genre> genres = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeGenre(resultSet), id);
 
         return new HashSet<>(genres);
-    }
-
-
-    @Override
-    public void idValidation(long id) throws ValidationException, IdNotFoundException {
-        if (id <= 0) {
-            throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
-        }
-
-        String sqlRequest = "SELECT id FROM PUBLIC.\"genre\" WHERE id = ?;";
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
-
-        if (!sqlRowSet.next()) {
-            throw new IdNotFoundException("введен несуществующий id: " + id);
-        }
     }
 
     private Genre makeGenre(ResultSet rs) throws SQLException {

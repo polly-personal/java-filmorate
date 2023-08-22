@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @Setter
 @ToString
+@AllArgsConstructor
 public class Mpa {
     private long id;
 

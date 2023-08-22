@@ -12,7 +12,7 @@ import ru.yandex.practicum.filmorate.storage.dao.ManagerDatabaseDao;
 @RequestMapping("/database")
 @Slf4j
 public class DatabaseController {
-    private ManagerDatabaseDao managerDatabase;
+    private final ManagerDatabaseDao managerDatabase;
 
     @Autowired
     public DatabaseController(ManagerDatabaseDao managerDatabase) {

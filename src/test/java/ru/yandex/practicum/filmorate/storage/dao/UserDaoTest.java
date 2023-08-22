@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -20,10 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Sql(scripts = {"/schema.sql", "/data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/delete_schema.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @DisplayName("UserDaoTest должен ")
 class UserDaoTest {
     private final UserDao userDao;
-    private final ManagerDatabaseDao managerDatabaseDao;
     private User defaultUser;
     private User defaultFriend;
 
@@ -44,12 +45,6 @@ class UserDaoTest {
                 .build();
     }
 
-    @AfterEach
-    public void refreshAllTabs() {
-        managerDatabaseDao.deleteAllTabs();
-        managerDatabaseDao.createAllTabs();
-    }
-
     @DisplayName("создать пользователя и выдать его по его id")
     @Test
     public void createUserAndGetById() {
@@ -66,7 +61,7 @@ class UserDaoTest {
         userDao.createUser(defaultUser);
         userDao.createUser(defaultFriend);
 
-        List<User> returnedUsersList = userDao.getUsersList();
+        List<User> returnedUsersList = userDao.getAllUsers();
         assertEquals(2, returnedUsersList.size(), "size списка пользователей != 2");
     }
 
@@ -87,7 +82,7 @@ class UserDaoTest {
         User returnedUser = userDao.createUser(defaultUser);
         userDao.deleteUser(returnedUser.getId());
 
-        List<User> returnedUsersList = userDao.getUsersList();
+        List<User> returnedUsersList = userDao.getAllUsers();
         assertEquals(0, returnedUsersList.size(), "size списка пользователей != 0");
     }
 

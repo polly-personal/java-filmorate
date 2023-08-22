@@ -6,17 +6,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
+import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Sql(scripts = {"/schema.sql", "/data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/delete_schema.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @DisplayName("MpaDaoTest должен ")
 class MpaDaoTest {
     private final MpaDao mpaDao;
@@ -34,27 +35,5 @@ class MpaDaoTest {
     public void getMpaList() {
         List<Mpa> returnedMpaList = mpaDao.getMpaList();
         assertEquals(5, returnedMpaList.size(), "size списка mpa-рейтингов != 5");
-    }
-
-    @DisplayName("выдать исключение, при отрицательном id")
-    @Test
-    public void idValidationWithNegativeId() {
-        IdNotFoundException exception = assertThrows(
-                IdNotFoundException.class,
-                () -> mpaDao.idValidation(-1)
-        );
-
-        assertEquals("🔹ваш id: -1 -- отрицательный либо равен 0", exception.getMessage());
-    }
-
-    @DisplayName("выдать исключение, при несуществующем id")
-    @Test
-    public void idValidationWithNonExistent() {
-        IdNotFoundException exception = assertThrows(
-                IdNotFoundException.class,
-                () -> mpaDao.idValidation(9999)
-        );
-
-        assertEquals("🔹введен несуществующий id: 9999", exception.getMessage());
     }
 }

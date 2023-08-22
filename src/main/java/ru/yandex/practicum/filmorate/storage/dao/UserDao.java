@@ -13,7 +13,7 @@ public interface UserDao {
 
     User getById(long id) throws ValidationException, IdNotFoundException;
 
-    List<User> getUsersList();
+    List<User> getAllUsers();
 
     User updateUser(User updatedUser) throws IdNotFoundException, ValidationException;
 
@@ -27,5 +27,5 @@ public interface UserDao {
 
     void idValidation(long id) throws ValidationException, IdNotFoundException;
 
-    void userValidation(User user);
+    boolean emailIsValid(String email);
 }

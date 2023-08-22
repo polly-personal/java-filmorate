@@ -17,13 +17,13 @@ public class LikeDaoImpl implements LikeDao {
 
     @Override
     public void addLike(long filmId, long userId) {
-        String sqlRequest = "INSERT INTO PUBLIC.\"like\" (film_id, user_id) VALUES (?, ?);";
+        String sqlRequest = "INSERT INTO PUBLIC.\"likes\" (film_id, user_id) VALUES (?, ?);";
         jdbcTemplate.update(sqlRequest, filmId, userId);
     }
 
     @Override
     public void deleteLike(long filmId, long userId) {
-        String sqlRequest = "DELETE FROM PUBLIC.\"like\" WHERE film_id = ? AND user_id = ?;";
+        String sqlRequest = "DELETE FROM PUBLIC.\"likes\" WHERE film_id = ? AND user_id = ?;";
         jdbcTemplate.update(sqlRequest, filmId, userId);
     }
 }

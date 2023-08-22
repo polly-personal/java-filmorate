@@ -24,7 +24,7 @@ public class FriendshipDaoImpl implements FriendshipDao {
     @Override
     public Set<Long> getFriendsIdsByUserId(long id) {
         String sqlRequest =
-                "SELECT friend_id FROM PUBLIC.\"friendship\" " +
+                "SELECT friend_id FROM PUBLIC.\"friendships\" " +
                         "WHERE user_id = ? " +
                         "AND is_approved = true;";
         List<Long> friendIds = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeFriendId(resultSet), id);
@@ -35,7 +35,7 @@ public class FriendshipDaoImpl implements FriendshipDao {
     @Override
     public void sendFriendRequest(long userId, long friendId) {
         String sqlRequest =
-                "INSERT INTO PUBLIC.\"friendship\" (user_id, friend_id, is_approved) " +
+                "INSERT INTO PUBLIC.\"friendships\" (user_id, friend_id, is_approved) " +
                         "VALUES (?, ?, false);";
         jdbcTemplate.update(sqlRequest, userId, friendId);
         jdbcTemplate.update(sqlRequest, friendId, userId);
@@ -44,7 +44,7 @@ public class FriendshipDaoImpl implements FriendshipDao {
     @Override
     public void approveFriendRequestForOneUserOnly(long userId, long friendId) {
         String sqlRequest =
-                "UPDATE PUBLIC.\"friendship\" SET " +
+                "UPDATE PUBLIC.\"friendships\" SET " +
                         "is_approved = true " +
                         "WHERE user_id = ?" +
                         "AND friend_id = ?;";
@@ -54,7 +54,7 @@ public class FriendshipDaoImpl implements FriendshipDao {
     @Override
     public void approveFriendRequestForBothUsers(long userId, long friendId) {
         String sqlRequest =
-                "UPDATE PUBLIC.\"friendship\" SET " +
+                "UPDATE PUBLIC.\"friendships\" SET " +
                         "is_approved = true " +
                         "WHERE user_id = ?" +
                         "AND friend_id = ?;";
@@ -65,7 +65,7 @@ public class FriendshipDaoImpl implements FriendshipDao {
     @Override
     public void deleteFriend(long userId, long friendId) {
         String sqlRequest =
-                "UPDATE PUBLIC.\"friendship\" SET " +
+                "UPDATE PUBLIC.\"friendships\" SET " +
                         "is_approved = false " +
                         "WHERE user_id = ?" +
                         "AND friend_id = ?;";

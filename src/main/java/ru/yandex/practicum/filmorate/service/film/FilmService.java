@@ -10,15 +10,15 @@ public interface FilmService {
 
     Film getById(long id) throws ValidationException;
 
-    List<Film> getFilmsList();
+    List<Film> getAllFilms();
 
     Film updateFilm(Film updatedFilm) throws ValidationException;
 
     String deleteFilm(long id) throws ValidationException;
 
-    Film addLike(long id, long userId) throws ValidationException;
+    void addLike(long id, long userId) throws ValidationException;
 
-    Film deleteLike(long id, long userId) throws ValidationException;
+    void deleteLike(long id, long userId) throws ValidationException;
 
     List<Film> getPopular(int count);
 }
