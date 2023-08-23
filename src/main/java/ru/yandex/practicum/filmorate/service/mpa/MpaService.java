@@ -11,5 +11,5 @@ public interface MpaService {
 
     List<Mpa> getMpaList() throws SQLException;
 
-    boolean idIsValid(long id) throws IdNotFoundException ;
+    boolean idIsValid(long id) throws IdNotFoundException;
 }
