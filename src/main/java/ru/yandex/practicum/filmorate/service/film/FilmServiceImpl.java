@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
 import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -32,57 +33,65 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Film getById(long id) throws ValidationException {
-        idValidation(id);
+    public Film getById(long id) throws IdNotFoundException {
+        idIsValid(id);
         return filmDao.getById(id);
     }
 
     @Override
-    public List<Film> getAllFilms() {
+    public List<Film> getAllFilms() throws SQLException {
         return filmDao.getAllFilms();
     }
 
     @Override
-    public Film updateFilm(Film updatedFilm) throws ValidationException {
-        idValidation(updatedFilm.getId());
+    public Film updateFilm(Film updatedFilm) throws IdNotFoundException, ValidationException {
+        idIsValid(updatedFilm.getId());
         filmValidation(updatedFilm);
 
         return filmDao.updateFilm(updatedFilm);
     }
 
     @Override
-    public String deleteFilm(long id) throws ValidationException {
+    public String deleteFilm(long id) throws IdNotFoundException {
+        idIsValid(id);
         return filmDao.deleteFilm(id);
     }
 
     @Override
-    public void addLike(long id, long userId) throws ValidationException {
-        idValidation(id);
-        userService.idValidation(userId);
+    public void addLike(long id, long userId) throws IdNotFoundException {
+        idIsValid(id);
+        userService.idIsValid(userId);
 
         likeDao.addLike(id, userId);
     }
 
     @Override
-    public void deleteLike(long id, long userId) throws ValidationException {
-        idValidation(id);
-        userService.idValidation(userId);
+    public void deleteLike(long id, long userId) throws IdNotFoundException {
+        idIsValid(id);
+        userService.idIsValid(userId);
 
         likeDao.deleteLike(id, userId);
     }
 
     @Override
-    public List<Film> getPopular(int count) {
+    public List<Film> getPopular(int count) throws SQLException, ValidationException {
+        countForPopularValidation(count);
         return filmDao.getPopular(count);
     }
 
-    public void idValidation(long id) throws ValidationException, IdNotFoundException {
+    @Override
+    public boolean idIsValid(long id) throws IdNotFoundException {
         if (id <= 0) {
             throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
         }
+        if (!filmDao.idIsExists(id)) {
+            throw new IdNotFoundException("введен несуществующий id: " + id);
+        }
+        return true;
     }
 
-    private void filmValidation(Film film) {
+    @Override
+    public void filmValidation(Film film) throws ValidationException {
         descriptionValidation(film.getDescription());
         releaseDateValidation(film.getReleaseDate());
         durationValidation(film.getDuration());
@@ -108,7 +117,7 @@ public class FilmServiceImpl implements FilmService {
         }
     }
 
-    private void countForPopularValidation(int count) {
+    private void countForPopularValidation(int count) throws ValidationException {
         if (count <= 0) {
             throw new ValidationException("некорректный параметр запроса -- count: " + count);
         }

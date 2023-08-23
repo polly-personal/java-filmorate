@@ -6,11 +6,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.FriendsListNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.dao.FriendshipDao;
 import ru.yandex.practicum.filmorate.storage.dao.UserDao;
 
 import java.sql.Date;
@@ -22,16 +19,15 @@ import java.util.*;
 @Component
 public class UserDaoImpl implements UserDao {
     private final JdbcTemplate jdbcTemplate;
-    private final FriendshipDao friendshipDao;
 
     @Autowired
-    public UserDaoImpl(JdbcTemplate jdbcTemplate, FriendshipDao friendshipDao) {
+    public UserDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.friendshipDao = friendshipDao;
     }
 
+
     @Override
-    public User createUser(User newUser) throws ValidationException {
+    public User createUser(User newUser) {
         String sqlRequest = "INSERT INTO PUBLIC.\"users\" (email, login, name, birthday) VALUES (?, ?, ?, ?);";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -52,26 +48,67 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User getById(long id) throws ValidationException, IdNotFoundException {
-        String sqlRequest = "SELECT * FROM PUBLIC.\"users\" WHERE id = ?";
+    public User getById(long id) throws IdNotFoundException {
+        String sqlRequest = "SELECT " +
+                "u.id AS user_id, " +
+                "u.email AS user_email, " +
+                "u.login AS user_login, " +
+                "u.name AS user_name, " +
+                "u.birthday AS user_birthday, " +
+                "fsh.friend_id AS friend_id " +
+
+                "FROM PUBLIC.\"users\" AS u " +
+
+                "LEFT JOIN PUBLIC.\"friendships\" AS fsh ON u.id = fsh.user_id " +
+
+                "WHERE u.id = ? " +
+                "GROUP BY u.id, fsh.friend_id; ";
+
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
 
-        if (sqlRowSet.next()) {
-            User user = User.builder()
-                    .id(sqlRowSet.getLong("id"))
-                    .email(sqlRowSet.getString("email"))
-                    .login(sqlRowSet.getString("login"))
-                    .name(sqlRowSet.getString("name"))
-                    .birthday(sqlRowSet.getDate("birthday").toLocalDate())
-                    .friendsIds(friendshipDao.getFriendsIdsByUserId(id))
-                    .build();
-            return user;
+        Map<Long, User> idAndUser = new HashMap<>();
+        Set<Long> currentIdFriends = new HashSet<>();
+
+        while (sqlRowSet.next()) {
+
+            if (!idAndUser.containsKey(id)) {
+                User user = User.builder()
+                        .id(sqlRowSet.getLong("USER_ID"))
+                        .email(sqlRowSet.getString("USER_EMAIL"))
+                        .name(sqlRowSet.getString("USER_NAME"))
+                        .login(sqlRowSet.getString("USER_LOGIN"))
+                        .birthday(sqlRowSet.getDate("USER_BIRTHDAY").toLocalDate())
+                        .build();
+                idAndUser.put(id, user);
+            }
+
+            Long friendId = sqlRowSet.getLong("FRIEND_ID");
+
+            User user = idAndUser.get(id);
+            Set<Long> friendsIdsFromUser = user.getFriendsIds();
+
+            if (friendsIdsFromUser == null && friendId != 0) {
+                friendsIdsFromUser = currentIdFriends;
+
+                friendsIdsFromUser.add(friendId);
+                user.setFriendsIds(friendsIdsFromUser);
+
+            } else if (friendsIdsFromUser != null && friendId != 0) {
+                friendsIdsFromUser.add(friendId);
+
+            } else if (friendsIdsFromUser == null && friendId == 0) {
+                user.setFriendsIds(currentIdFriends);
+            }
+        }
+
+        if (idAndUser.containsKey(id)) {
+            return idAndUser.get(id);
         }
         throw new IdNotFoundException("введен несуществующий id: " + id);
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> getAllUsers() throws SQLException {
         String sqlRequest = "SELECT * FROM PUBLIC.\"users\";";
         List<User> users = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeUser(resultSet));
 
@@ -79,8 +116,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User updateUser(User updatedUser) throws IdNotFoundException, ValidationException {
-        long id = updatedUser.getId();
+    public User updateUser(User updatedUser) {
         String sqlUpdateRequest = "UPDATE PUBLIC.\"users\" SET " +
                 "email = ?, " +
                 "login = ?, " +
@@ -99,7 +135,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public String deleteUser(long id) throws IdNotFoundException, ValidationException {
+    public String deleteUser(long id) {
         String sqlRequest = "DELETE FROM PUBLIC.\"users\" WHERE id = ?";
         jdbcTemplate.update(sqlRequest, id);
 
@@ -107,28 +143,18 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User addFriend(long id, long friendId) throws ValidationException, IdNotFoundException {
-        friendshipDao.sendFriendRequest(id, friendId);
-        friendshipDao.approveFriendRequestForOneUserOnly(id, friendId);
+    public boolean idIsExists(long id) {
+        String sqlRequest = "SELECT id FROM PUBLIC.\"users\" WHERE id = ?;";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
 
-        return getById(id);
+        if (sqlRowSet.next()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public User deleteFriend(long id, long friendId) throws IdNotFoundException, ValidationException,
-            FriendsListNotFoundException {
-        friendshipDao.deleteFriend(id, friendId);
-        return getById(id);
-    }
-
-    @Override
-    public Set<Long> getFriends(long id) throws ValidationException, IdNotFoundException,
-            FriendsListNotFoundException {
-        return friendshipDao.getFriendsIdsByUserId(id);
-    }
-
-    @Override
-    public boolean emailIsValid(String email) throws ValidationException {
+    public boolean emailIsExists(String email) {
         String sqlRequest = "SELECT * FROM PUBLIC.\"users\" WHERE email = ?;";
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, email);
 
@@ -145,19 +171,5 @@ public class UserDaoImpl implements UserDao {
                 .login(resultSet.getString("login"))
                 .name(resultSet.getString("name"))
                 .birthday(resultSet.getDate("birthday").toLocalDate()).build();
-    }
-
-    @Override
-    public void idValidation(long id) throws ValidationException, IdNotFoundException {
-        if (id <= 0) {
-            throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
-        }
-
-        String sqlRequest = "SELECT id FROM PUBLIC.\"users\" WHERE id = ?;";
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
-
-        if (!sqlRowSet.next()) {
-            throw new IdNotFoundException("введен несуществующий id: " + id);
-        }
     }
 }

@@ -27,6 +27,7 @@ create TABLE IF NOT EXISTS PUBLIC."films"(
 	release_date DATE NOT NULL,
 	duration INTEGER NOT NULL,
 	rate BIGINT,
+	likes BIGINT,
 	mpa_id INTEGER REFERENCES PUBLIC."mpa"(id)
 );
 

@@ -1,20 +1,23 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public interface FilmDao {
-    Film createFilm(Film newFilm) throws ValidationException;
+    Film createFilm(Film newFilm);
 
-    Film getById(long id) throws ValidationException;
+    Film getById(long id) throws IdNotFoundException;
 
-    List<Film> getAllFilms();
+    List<Film> getAllFilms() throws SQLException;
 
-    Film updateFilm(Film updatedFilm) throws ValidationException;
+    Film updateFilm(Film updatedFilm);
 
-    String deleteFilm(long id) throws ValidationException;
+    String deleteFilm(long id);
 
-    List<Film> getPopular(int count);
+    List<Film> getPopular(int count) throws SQLException;
+
+    boolean idIsExists(long id);
 }

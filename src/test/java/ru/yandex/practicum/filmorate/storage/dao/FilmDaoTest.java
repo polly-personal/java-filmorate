@@ -8,19 +8,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -83,7 +82,7 @@ class FilmDaoTest {
 
     @DisplayName("выдать список пользователей")
     @Test
-    public void getFilmsList() {
+    public void getFilmsList() throws SQLException {
         filmDao.createFilm(defaultFilm1);
         filmDao.createFilm(defaultFilm2);
         List<Film> returnedFilmsList = filmDao.getAllFilms();
@@ -104,7 +103,7 @@ class FilmDaoTest {
 
     @DisplayName("удалить пользователя по его id")
     @Test
-    public void deleteFilm() {
+    public void deleteFilm() throws SQLException {
         Film returnedFilm = filmDao.createFilm(defaultFilm1);
         filmDao.deleteFilm(returnedFilm.getId());
 
@@ -114,7 +113,7 @@ class FilmDaoTest {
 
     @DisplayName("выдать список популярных фильмов")
     @Test
-    public void getPopular() {
+    public void getPopular() throws SQLException {
         User returnedUser = userDao.createUser(defaultUser);
         Film returnedFilm1 = filmDao.createFilm(defaultFilm1);
         Film returnedFilm2 = filmDao.createFilm(defaultFilm2);
@@ -122,28 +121,5 @@ class FilmDaoTest {
 
         List<Film> returnedPopularFilms = filmDao.getPopular(10);
         assertEquals(2, returnedPopularFilms.size(), "size списка популярных фильмов != 2");
-
-    }
-
-    @DisplayName("выдать исключение, при отрицательном id")
-    @Test
-    public void idValidationWithNegativeId() {
-        IdNotFoundException exception = assertThrows(
-                IdNotFoundException.class,
-                () -> userDao.idValidation(-1)
-        );
-
-        assertEquals("🔹ваш id: -1 -- отрицательный либо равен 0", exception.getMessage());
-    }
-
-    @DisplayName("выдать исключение, при несуществующем id")
-    @Test
-    public void idValidationWithNonExistent() {
-        IdNotFoundException exception = assertThrows(
-                IdNotFoundException.class,
-                () -> userDao.idValidation(9999)
-        );
-
-        assertEquals("🔹введен несуществующий id: 9999", exception.getMessage());
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -50,7 +51,7 @@ class FriendshipDaoTest {
 
     @DisplayName("выдать список id друзей по id пользователя")
     @Test
-    public void getFriendsIdsByUserId() {
+    public void getFriendsIdsByUserId() throws SQLException {
         User returnedUser = defaultUser;
         User returnedFriend = defaultFriend;
 
@@ -63,7 +64,7 @@ class FriendshipDaoTest {
 
     @DisplayName("добавить \"друга\" только для пользователя (у \"друга\" нет друга)")
     @Test
-    public void sendFriendRequest() {
+    public void sendFriendRequest() throws SQLException {
         User returnedUser = defaultUser;
         User returnedFriend = defaultFriend;
 
@@ -72,24 +73,6 @@ class FriendshipDaoTest {
 
         Set<Long> returnedFriendsIdsForUser = friendshipDao.getFriendsIdsByUserId(returnedUser.getId());
         assertEquals(1, returnedFriendsIdsForUser.size(), "size списка друзей != 1");
-
-        Set<Long> returnedFriendsIdsForFriend = friendshipDao.getFriendsIdsByUserId(returnedFriend.getId());
-        assertEquals(0, returnedFriendsIdsForFriend.size(), "size списка друзей != 0");
-    }
-
-    @DisplayName("удалить \"друга\" только для пользователя")
-    @Test
-    public void deleteFriend() {
-        User returnedUser = defaultUser;
-        User returnedFriend = defaultFriend;
-
-        friendshipDao.sendFriendRequest(returnedUser.getId(), returnedFriend.getId());
-        friendshipDao.approveFriendRequestForOneUserOnly(returnedUser.getId(), returnedFriend.getId());
-
-        friendshipDao.deleteFriend(returnedUser.getId(), returnedFriend.getId());
-
-        Set<Long> returnedFriendsIdsForUser = friendshipDao.getFriendsIdsByUserId(returnedUser.getId());
-        assertEquals(0, returnedFriendsIdsForUser.size(), "size списка друзей != 0");
 
         Set<Long> returnedFriendsIdsForFriend = friendshipDao.getFriendsIdsByUserId(returnedFriend.getId());
         assertEquals(0, returnedFriendsIdsForFriend.size(), "size списка друзей != 0");

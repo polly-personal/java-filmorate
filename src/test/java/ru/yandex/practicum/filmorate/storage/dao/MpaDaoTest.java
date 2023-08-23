@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,7 +33,7 @@ class MpaDaoTest {
 
     @DisplayName("выдать список всех mpa-рейтингов")
     @Test
-    public void getMpaList() {
+    public void getMpaList() throws SQLException {
         List<Mpa> returnedMpaList = mpaDao.getMpaList();
         assertEquals(5, returnedMpaList.size(), "size списка mpa-рейтингов != 5");
     }

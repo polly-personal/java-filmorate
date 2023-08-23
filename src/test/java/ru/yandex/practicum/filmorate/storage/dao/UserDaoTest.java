@@ -8,14 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -57,7 +56,7 @@ class UserDaoTest {
 
     @DisplayName("выдать список пользователей")
     @Test
-    public void getUsersList() {
+    public void getUsersList() throws SQLException {
         userDao.createUser(defaultUser);
         userDao.createUser(defaultFriend);
 
@@ -78,73 +77,11 @@ class UserDaoTest {
 
     @DisplayName("удалить пользователя по его id")
     @Test
-    public void deleteUser() {
+    public void deleteUser() throws SQLException {
         User returnedUser = userDao.createUser(defaultUser);
         userDao.deleteUser(returnedUser.getId());
 
         List<User> returnedUsersList = userDao.getAllUsers();
         assertEquals(0, returnedUsersList.size(), "size списка пользователей != 0");
-    }
-
-    @DisplayName("добавить пользователю друга, (у \"друга\" нет друга)")
-    @Test
-    public void addFriend() {
-        User returnedUser = userDao.createUser(defaultUser);
-        User returnedFriend = userDao.createUser(defaultFriend);
-        userDao.addFriend(returnedUser.getId(), returnedFriend.getId());
-
-        User returnedUserById = userDao.getById(returnedUser.getId());
-        assertEquals(1, returnedUserById.getFriendsIds().size(), "size списка друзей != 1");
-
-        User returnedFriendById = userDao.getById(returnedFriend.getId());
-        assertEquals(0, returnedFriendById.getFriendsIds().size(), "size списка друзей != 0");
-    }
-
-    @DisplayName("удалить пользователю друга")
-    @Test
-    public void deleteFriend() {
-        User returnedUser = userDao.createUser(defaultUser);
-        User returnedFriend = userDao.createUser(defaultFriend);
-        userDao.addFriend(returnedUser.getId(), returnedFriend.getId());
-        userDao.deleteFriend(returnedUser.getId(), returnedFriend.getId());
-
-        User returnedUserById = userDao.getById(returnedUser.getId());
-        assertEquals(0, returnedUserById.getFriendsIds().size(), "size списка друзей != 0");
-
-        User returnedFriendById = userDao.getById(returnedFriend.getId());
-        assertEquals(0, returnedFriendById.getFriendsIds().size(), "size списка друзей != 0");
-    }
-
-    @DisplayName("выдать список id друзей по id пользователя")
-    @Test
-    public void getFriends() {
-        User returnedUser = userDao.createUser(defaultUser);
-        User returnedFriend = userDao.createUser(defaultFriend);
-        userDao.addFriend(returnedUser.getId(), returnedFriend.getId());
-
-        User returnedUserById = userDao.getById(returnedUser.getId());
-        assertEquals(1, returnedUserById.getFriendsIds().size(), "size списка друзей != 1");
-    }
-
-    @DisplayName("выдать исключение, при отрицательном id")
-    @Test
-    public void idValidationWithNegativeId() {
-        IdNotFoundException exception = assertThrows(
-                IdNotFoundException.class,
-                () -> userDao.idValidation(-1)
-        );
-
-        assertEquals("🔹ваш id: -1 -- отрицательный либо равен 0", exception.getMessage());
-    }
-
-    @DisplayName("выдать исключение, при несуществующем id")
-    @Test
-    public void idValidationWithNonExistent() {
-        IdNotFoundException exception = assertThrows(
-                IdNotFoundException.class,
-                () -> userDao.idValidation(9999)
-        );
-
-        assertEquals("🔹введен несуществующий id: 9999", exception.getMessage());
     }
 }

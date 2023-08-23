@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -76,7 +77,7 @@ class LikeDaoTest {
 
     @DisplayName("добавить лайк фильму от пользователя")
     @Test
-    public void addLike() {
+    public void addLike() throws SQLException {
         User returnedUser = defaultUser;
         Film returnedFilm1 = defaultFilm1;
         Film returnedFilm2 = defaultFilm2;
@@ -90,7 +91,7 @@ class LikeDaoTest {
 
     @DisplayName("удалить лайк для фильму от пользователя")
     @Test
-    public void deleteLike() {
+    public void deleteLike() throws SQLException {
         User returnedUser = defaultUser;
         Film returnedFilm1 = defaultFilm1;
         Film returnedFilm2 = defaultFilm2;

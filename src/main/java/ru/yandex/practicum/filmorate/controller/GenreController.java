@@ -6,10 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.genre.GenreService;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -24,14 +25,14 @@ public class GenreController {
     }
 
     @GetMapping("/{id}")
-    public Genre getById(@PathVariable long id) throws ValidationException {
+    public Genre getById(@PathVariable long id) throws IdNotFoundException {
         Genre genre = genreService.getById(id);
         log.info("🟩 выдан жанр: " + genre);
         return genre;
     }
 
     @GetMapping
-    public List<Genre> getFilmsList() {
+    public List<Genre> getFilmsList() throws SQLException {
         List<Genre> genres = genreService.getGenresList();
         log.info("🟩 список жанров выдан: " + genres);
         return genres;

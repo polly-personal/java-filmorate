@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.dao.GenreDao;
 
@@ -25,7 +26,7 @@ public class GenreDaoImpl implements GenreDao {
     }
 
     @Override
-    public Genre getById(long id) {
+    public Genre getById(long id) throws IdNotFoundException {
         String sqlRequest = "SELECT * FROM PUBLIC.\"genres\" WHERE id = ?";
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
 
@@ -41,7 +42,7 @@ public class GenreDaoImpl implements GenreDao {
     }
 
     @Override
-    public List<Genre> getGenreList() {
+    public List<Genre> getGenreList() throws SQLException {
         String sqlRequest = "SELECT * FROM PUBLIC.\"genres\" ORDER BY id;";
         List<Genre> genres = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeGenre(resultSet));
 
@@ -62,6 +63,17 @@ public class GenreDaoImpl implements GenreDao {
         List<Genre> genres = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeGenre(resultSet), id);
 
         return new HashSet<>(genres);
+    }
+
+    @Override
+    public boolean idIsExists(long id) throws ValidationException, IdNotFoundException {
+        String sqlRequest = "SELECT id FROM PUBLIC.\"genres\" WHERE id = ?;";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
+
+        if (sqlRowSet.next()) {
+            return true;
+        }
+        return false;
     }
 
     private Genre makeGenre(ResultSet rs) throws SQLException {

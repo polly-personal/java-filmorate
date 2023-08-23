@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +39,7 @@ class GenreDaoTest {
 
     @DisplayName("выдать список всех жанров")
     @Test
-    public void getGenreList() {
+    public void getGenreList() throws SQLException {
         List<Genre> returnedGenreList = genreDao.getGenreList();
         assertEquals(6, returnedGenreList.size(), "size списка жанров != 6");
     }

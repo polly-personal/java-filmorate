@@ -3,10 +3,10 @@ package ru.yandex.practicum.filmorate.service.genre;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.dao.GenreDao;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Service
@@ -19,19 +19,25 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
-    public Genre getById(long id) {
-        idValidation(id);
+    public Genre getById(long id) throws IdNotFoundException {
+        idIsValid(id);
         return genreDao.getById(id);
     }
 
     @Override
-    public List<Genre> getGenresList() {
+    public List<Genre> getGenresList() throws SQLException {
         return genreDao.getGenreList();
     }
 
-    public void idValidation(long id) throws ValidationException, IdNotFoundException {
+    @Override
+    public boolean idIsValid(long id) throws IdNotFoundException {
         if (id <= 0) {
             throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
         }
+
+        if (!genreDao.idIsExists(id)) {
+            throw new IdNotFoundException("введен несуществующий id: " + id);
+        }
+        return true;
     }
 }

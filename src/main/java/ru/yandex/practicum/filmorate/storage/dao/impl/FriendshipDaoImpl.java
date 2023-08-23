@@ -22,17 +22,6 @@ public class FriendshipDaoImpl implements FriendshipDao {
     }
 
     @Override
-    public Set<Long> getFriendsIdsByUserId(long id) {
-        String sqlRequest =
-                "SELECT friend_id FROM PUBLIC.\"friendships\" " +
-                        "WHERE user_id = ? " +
-                        "AND is_approved = true;";
-        List<Long> friendIds = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeFriendId(resultSet), id);
-
-        return new HashSet<>(friendIds);
-    }
-
-    @Override
     public void sendFriendRequest(long userId, long friendId) {
         String sqlRequest =
                 "INSERT INTO PUBLIC.\"friendships\" (user_id, friend_id, is_approved) " +
@@ -63,7 +52,18 @@ public class FriendshipDaoImpl implements FriendshipDao {
     }
 
     @Override
-    public void deleteFriend(long userId, long friendId) {
+    public Set<Long> getFriendsIdsByUserId(long userId) throws SQLException {
+        String sqlRequest =
+                "SELECT friend_id FROM PUBLIC.\"friendships\" " +
+                        "WHERE user_id = ? " +
+                        "AND is_approved = true;";
+        List<Long> friendIds = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeFriendId(resultSet), userId);
+
+        return new HashSet<>(friendIds);
+    }
+
+    @Override
+    public void deleteFriendForUserOnly(long userId, long friendId) {
         String sqlRequest =
                 "UPDATE PUBLIC.\"friendships\" SET " +
                         "is_approved = false " +

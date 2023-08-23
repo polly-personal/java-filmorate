@@ -1,31 +1,23 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import ru.yandex.practicum.filmorate.exception.FriendsListNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
 public interface UserDao {
-    User createUser(User newUser) throws ValidationException;
+    User createUser(User newUser);
 
-    User getById(long id) throws ValidationException, IdNotFoundException;
+    User getById(long id) throws IdNotFoundException;
 
-    List<User> getAllUsers();
+    List<User> getAllUsers() throws SQLException;
 
-    User updateUser(User updatedUser) throws IdNotFoundException, ValidationException;
+    User updateUser(User updatedUser);
 
-    String deleteUser(long id) throws IdNotFoundException, ValidationException;
+    String deleteUser(long id);
 
-    User addFriend(long id, long friendId) throws ValidationException, IdNotFoundException;
+    boolean idIsExists(long id);
 
-    User deleteFriend(long id, long friendId) throws IdNotFoundException, ValidationException, FriendsListNotFoundException;
-
-    Set<Long> getFriends(long id) throws ValidationException, IdNotFoundException, FriendsListNotFoundException;
-
-    void idValidation(long id) throws ValidationException, IdNotFoundException;
-
-    boolean emailIsValid(String email);
+    boolean emailIsExists(String email);
 }

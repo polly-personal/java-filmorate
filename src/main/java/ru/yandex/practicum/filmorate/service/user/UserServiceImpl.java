@@ -2,12 +2,12 @@ package ru.yandex.practicum.filmorate.service.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FriendsListNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.dao.UserDao;
 
+import java.sql.SQLException;
 import java.util.*;
 
 @Service
@@ -26,81 +26,44 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getById(long id) throws ValidationException, IdNotFoundException {
-        idValidation(id);
+    public User getById(long id) throws IdNotFoundException {
+        idIsValid(id);
         return userDao.getById(id);
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> getAllUsers() throws SQLException {
         return userDao.getAllUsers();
     }
 
     @Override
     public User updateUser(User updatedUser) throws IdNotFoundException, ValidationException {
-        userDao.idValidation(updatedUser.getId());
+        idIsValid(updatedUser.getId());
         userValidation(updatedUser);
 
         return userDao.updateUser(updatedUser);
     }
 
     @Override
-    public String deleteUser(long id) throws IdNotFoundException, ValidationException {
-        idValidation(id);
+    public String deleteUser(long id) throws IdNotFoundException {
+        idIsValid(id);
         return userDao.deleteUser(id);
     }
 
     @Override
-    public User addFriend(long id, long friendId) throws ValidationException, IdNotFoundException {
-        idValidation(id);
-        idValidation(friendId);
-        return userDao.addFriend(id, friendId);
-    }
-
-    @Override
-    public User deleteFriend(long id, long friendId) throws IdNotFoundException, ValidationException, FriendsListNotFoundException {
-        idValidation(id);
-        idValidation(friendId);
-        return userDao.deleteFriend(id, friendId);
-    }
-
-    @Override
-    public List<User> getFriends(long id) throws ValidationException, IdNotFoundException, FriendsListNotFoundException {
-        idValidation(id);
-
-        Set<Long> friendsIds = userDao.getFriends(id);
-        if (friendsIds == null) {
-            throw new FriendsListNotFoundException("список друзей пуст");
-        }
-
-        List<User> friends = new ArrayList<>();
-        for (Long friendId : friendsIds) {
-            friends.add(userDao.getById(friendId));
-        }
-
-        return friends;
-    }
-
-    @Override
-    public List<User> getCommonFriends(long id, long otherId) throws ValidationException, IdNotFoundException, FriendsListNotFoundException {
-        idValidation(id);
-        idValidation(otherId);
-
-        List<User> friendsById = new ArrayList<>(getFriends(id));
-        List<User> friendsByOtherId = new ArrayList<>(getFriends(otherId));
-
-        friendsById.retainAll(friendsByOtherId);
-        return friendsById;
-    }
-
-    @Override
-    public void idValidation(long id) throws ValidationException, IdNotFoundException {
+    public boolean idIsValid(long id) throws IdNotFoundException {
         if (id <= 0) {
             throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
         }
+
+        if (!userDao.idIsExists(id)) {
+            throw new IdNotFoundException("введен несуществующий id: " + id);
+        }
+        return true;
     }
 
-    public void userValidation(User user) {
+    @Override
+    public void userValidation(User user) throws ValidationException {
         emailValidation(user.getEmail());
 
         String login = user.getLogin();
@@ -110,10 +73,10 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean emailValidation(String email) throws ValidationException {
-        if (userDao.emailIsValid(email)) {
-            return true;
+        if (!userDao.emailIsExists(email)) {
+            throw new ValidationException("пользователь с таким email уже существует");
         }
-        throw new ValidationException("пользователь с таким email уже существует");
+        return true;
     }
 
     private void loginValidation(String login) throws ValidationException {

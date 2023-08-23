@@ -40,11 +40,22 @@ public class MpaDaoImpl implements MpaDao {
     }
 
     @Override
-    public List<Mpa> getMpaList() {
+    public List<Mpa> getMpaList() throws SQLException {
         String sqlRequest = "SELECT * FROM PUBLIC.\"mpa\" ORDER BY id;";
         List<Mpa> mpas = jdbcTemplate.query(sqlRequest, (resultSet, rowNum) -> makeMpa(resultSet));
 
         return mpas;
+    }
+
+    @Override
+    public boolean idIsExists(long id) {
+        String sqlRequest = "SELECT id FROM PUBLIC.\"mpa\" WHERE id = ?;";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlRequest, id);
+
+        if (sqlRowSet.next()) {
+            return true;
+        }
+        return false;
     }
 
     private Mpa makeMpa(ResultSet rs) throws SQLException {
