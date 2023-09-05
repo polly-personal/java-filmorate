@@ -2,147 +2,122 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FriendsListNotFoundException;
+import ru.yandex.practicum.filmorate.exception.IdNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.user.UserServiceImpl;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.service.user.UserService;
+import ru.yandex.practicum.filmorate.storage.dao.FilmDao;
+import ru.yandex.practicum.filmorate.storage.dao.LikeDao;
 
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
 public class FilmServiceImpl implements FilmService {
-    private InMemoryFilmStorage filmStorage;
-    private InMemoryUserStorage userStorage;
-    private UserServiceImpl userServiceImpl;
+    private final FilmDao filmDao;
+    private final LikeDao likeDao;
+    private final UserService userService;
 
     @Autowired
-    public FilmServiceImpl(InMemoryFilmStorage filmStorage, InMemoryUserStorage userStorage, UserServiceImpl userServiceImpl) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-        this.userServiceImpl = userServiceImpl;
+    public FilmServiceImpl(FilmDao filmDao, LikeDao likeDao, UserService userService) {
+        this.filmDao = filmDao;
+        this.likeDao = likeDao;
+        this.userService = userService;
     }
 
+    @Override
     public Film createFilm(Film newFilm) throws ValidationException {
-        return filmStorage.createFilm(newFilm);
+        filmValidation(newFilm);
+        return filmDao.createFilm(newFilm);
     }
 
-    public Film getById(long id) throws ValidationException {
-        return filmStorage.getById(id);
+    @Override
+    public Film getById(long id) throws IdNotFoundException {
+        idIsValid(id);
+        return filmDao.getById(id);
     }
 
-    public List<Film> getFilmsList() {
-        return filmStorage.getFilmsList();
+    @Override
+    public List<Film> getAllFilms() throws SQLException {
+        return filmDao.getAllFilms();
     }
 
-    public Film updateFilm(Film updatedFilm) throws ValidationException {
-        return filmStorage.updateFilm(updatedFilm);
+    @Override
+    public Film updateFilm(Film updatedFilm) throws IdNotFoundException, ValidationException {
+        idIsValid(updatedFilm.getId());
+        filmValidation(updatedFilm);
+
+        return filmDao.updateFilm(updatedFilm);
     }
 
-    public String deleteFilm(long id) throws ValidationException {
-        return filmStorage.deleteFilm(id);
+    @Override
+    public String deleteFilm(long id) throws IdNotFoundException {
+        idIsValid(id);
+        return filmDao.deleteFilm(id);
     }
 
-    public Film addLike(long id, long userId) throws ValidationException {
-        filmStorage.idValidation(id);
-        userStorage.idValidation(userId);
+    @Override
+    public void addLike(long id, long userId) throws IdNotFoundException {
+        idIsValid(id);
+        userService.idIsValid(userId);
 
-        Film film = getById(id);
-        Set<Long> likes = film.getLikes();
-        if (likeListIsEmpty(likes)) {
-            likes = new HashSet<>();
-        }
-        likes.add(userId);
-        film.setLikes(likes);
-
-        User user = userStorage.getById(userId);
-        Set<Long> likedFilms = user.getLikedFilms();
-        if (likedFilms == null) {
-            likedFilms = new HashSet<>();
-        }
-        likedFilms.add(id);
-        user.setLikedFilms(likedFilms);
-
-        return film;
+        likeDao.addLike(id, userId);
     }
 
-    public Film deleteLike(long id, long userId) throws ValidationException {
-        filmStorage.idValidation(id);
-        userStorage.idValidation(userId);
+    @Override
+    public void deleteLike(long id, long userId) throws IdNotFoundException {
+        idIsValid(id);
+        userService.idIsValid(userId);
 
-        Film film = getById(id);
-        Set<Long> filmLikes = film.getLikes();
-        likesListValidation(filmLikes, userId);
-        filmLikes.remove(userId);
-
-        User user = userStorage.getById(userId);
-        Set<Long> userLikes = user.getLikedFilms();
-        userServiceImpl.likedFilmsListValidation(userLikes, id);
-        userLikes.remove(id);
-
-        return film;
+        likeDao.deleteLike(id, userId);
     }
 
-    public List<Film> getPopular(int count) {
+    @Override
+    public List<Film> getPopular(int count) throws SQLException, ValidationException {
         countForPopularValidation(count);
-        Comparator<Film> comparator = new Comparator<Film>() {
-            @Override
-            public int compare(Film f1, Film f2) {
-                Set<Long> likes1 = f1.getLikes();
-                Set<Long> likes2 = f2.getLikes();
-                int counter;
+        return filmDao.getPopular(count);
+    }
 
-                if (likes1 != null && likes2 != null) {
-                    int size1 = likes1.size();
-                    int size2 = likes2.size();
-                    if (size1 != size2) {
-                        counter = size1 - size2;
-                        return counter;
-                    }
-                    counter = 0;
-                    return counter;
-                }
+    @Override
+    public boolean idIsValid(long id) throws IdNotFoundException {
+        if (id <= 0) {
+            throw new IdNotFoundException("ваш id: " + id + " -- отрицательный либо равен 0");
+        }
+        if (!filmDao.idIsExists(id)) {
+            throw new IdNotFoundException("введен несуществующий id: " + id);
+        }
+        return true;
+    }
 
-                if (likes1 == null && likes2 == null) {
-                    counter = (int) f1.getId() - (int) f2.getId();
-                    return counter;
-                }
+    @Override
+    public void filmValidation(Film film) throws ValidationException {
+        descriptionValidation(film.getDescription());
+        releaseDateValidation(film.getReleaseDate());
+        durationValidation(film.getDuration());
+    }
 
-                if (likes1 != null) {
-                    counter = 1;
-                    return counter;
-                }
-                counter = -1;
-                return counter;
+    private void descriptionValidation(String description) throws ValidationException {
+        if (description != null) {
+            if (description.isBlank()) {
+                throw new ValidationException("некорректный description");
             }
-        };
-
-        List<Film> filmsList = new ArrayList<>(getFilmsList());
-        Collections.sort(filmsList, comparator.reversed());
-
-        if (count > filmsList.size()) {
-            count = filmsList.size();
-        }
-
-        return filmsList.subList(0, count);
-    }
-
-    private boolean likeListIsEmpty(Set<Long> likes) {
-        return likes == null;
-    }
-
-    private void likesListValidation(Set<Long> likes, long userId) throws ValidationException {
-        if (likeListIsEmpty(likes)) {
-            throw new FriendsListNotFoundException("у фильма нет лайков");
-        }
-        if (!likes.contains(userId)) {
-            throw new ValidationException("у фильма нет лайка с userId: " + userId);
         }
     }
 
-    private void countForPopularValidation(int count) {
+    private void releaseDateValidation(LocalDate releaseDate) throws ValidationException {
+        if (releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
+            throw new ValidationException("\"releaseDate\" не может быть раньше, чем 1895/12/28");
+        }
+    }
+
+    private void durationValidation(double duration) throws ValidationException {
+        if (duration < 0.1) {
+            throw new ValidationException("поле \"duration\" не может быть отрицательным или равно нулю");
+        }
+    }
+
+    private void countForPopularValidation(int count) throws ValidationException {
         if (count <= 0) {
             throw new ValidationException("некорректный параметр запроса -- count: " + count);
         }
