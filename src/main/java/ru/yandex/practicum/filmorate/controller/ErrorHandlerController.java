@@ -23,7 +23,7 @@ public class ErrorHandlerController {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
     public ErrorResponse handleIdNotFoundException(final IdNotFoundException e) {
         log.warn("🟥 " + e.getMessage());
         return new ErrorResponse(e.getMessage());

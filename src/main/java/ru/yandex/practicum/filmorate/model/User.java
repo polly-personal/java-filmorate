@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,7 +19,7 @@ public class User {
     @Email(message = "некорректный email")
     private String email;
 
-    @NotBlank(message = "некорректный login")
+    @NotBlank(message = "поле \"login\" должно быть заполнено")
     private String login;
 
     private String name;
@@ -29,8 +28,5 @@ public class User {
     @PastOrPresent(message = "поле \"birthday\" не может быть в будущем")
     private LocalDate birthday;
 
-    @JsonIgnore
-    private Set<Long> friendIds;
-    @JsonIgnore
-    private Set<Long> likedFilms;
+    private Set<Long> friendsIds;
 }
